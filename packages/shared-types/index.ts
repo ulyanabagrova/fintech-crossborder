@@ -1,25 +1,37 @@
-// Единые типы данных для WeChat Mini-App и NestJS Backend
-
-export interface User {
+// 1. Модель Цифровой Подарочной Карты
+export interface DigitalGiftCard {
   id: string;
-  openId: string;
-  createdAt: Date;
+  maskedCardNumber: string; // "**** **** **** 8888"
+  currentCardValue: number;  // Остаток/номинал
+  currency: 'CNY' | 'RUB';
+  status: 'ACTIVE' | 'EXPIRED' | 'BLOCKED';
+  expiryDate: string;
 }
 
-export interface DigitizedCard {
-  id: string;
-  userId: string;
-  nominalRub: number;
-  balanceRub: number;
-  encryptedToken: string;
+// 2. Запрос на списание по QR-коду
+export interface VoucherRedemptionRequest {
+  cardId: string;
+  rawQrData: string;         // Токен из кассового QR
+  merchantName?: string;
+  amountCNY: number;
 }
 
-export interface Transaction {
+// 3. Ответ от сервера после списания
+export interface VoucherRedemptionResponse {
+  success: boolean;
+  transactionId: string;
+  remainingBalance: number;
+  timestamp: string;
+  error?: string;
+}
+
+// 4. История транзакций
+export interface CardUsageHistory {
   id: string;
   cardId: string;
-  amountRub: number;
-  amountCny: number;
-  merchantName: string;
-  status: 'PENDING' | 'SUCCESS' | 'FAILED';
-  createdAt: Date;
+  retailPartnerName: string;
+  amount: number;
+  currency: 'CNY' | 'RUB';
+  createdAt: string;
+  status: 'SUCCESS' | 'FAILED' | 'PENDING';
 }

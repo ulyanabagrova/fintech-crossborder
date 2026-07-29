@@ -1,0 +1,16 @@
+{
+  "name": "fintech-crossborder",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Cross-border retail clearing & digital gift cards platform",
+  "packageManager": "pnpm@8.8.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm --filter @fintech/shared-types build && pnpm --filter backend build",
+    "start:backend": "pnpm --filter backend start:dev",
+    "lint": "eslint \"{apps,packages}/**/*.ts\""
+  }
+}

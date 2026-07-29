@@ -1,0 +1,29 @@
+<view class="container">
+
+  <view class="card-container" wx:if="{{card}}">
+    <view class="card-header">
+      <text class="card-title">Digital Gift Voucher</text>
+      <text class="card-status">{{card.status}}</text>
+    </view>
+
+    <view class="card-balance">
+      <text class="currency">¥</text>
+      <text class="amount">{{card.currentCardValue}}</text>
+    </view>
+
+    <view class="card-footer">
+      <text class="card-number">{{card.maskedCardNumber}}</text>
+      <text class="card-expiry">Exp: {{card.expiryDate}}</text>
+    </view>
+  </view>
+
+
+  <view class="loading" wx:else>
+    <text>Загрузка баланса...</text>
+  </view>
+
+
+  <button class="scan-btn" bindtap="handleScanQR">
+    📷 Сканировать QR для оплаты
+  </button>
+</view>
