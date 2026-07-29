@@ -9,14 +9,14 @@ export class RetailGatewayService {
     private readonly vouchersService: VouchersService,
   ) {}
 
-  processClearing(cardId: string, rawQrData: string) {
+  processClearing(cardId: string, rawQrData: string, amountCNY?: number) {
     if (!rawQrData) {
       throw new BadRequestException('QR-код пуст');
     }
 
     // Парсим строку вида: FT_REDEEM|terminal_id|batch_id|AMOUNT|CURRENCY|sig
     const parts = rawQrData.split('|');
-    const parsedAmount = parseFloat(parts[3]);
+    const parsedAmount = amountCNY ?? parseFloat(parts[3]);
 
     if (isNaN(parsedAmount) || parsedAmount <= 0) {
       throw new BadRequestException('Некорректная сумма в QR-коде');
