@@ -1,29 +1,45 @@
-<view class="container">
-
-  <view class="card-container" wx:if="{{card}}">
-    <view class="card-header">
-      <text class="card-title">Digital Gift Voucher</text>
-      <text class="card-status">{{card.status}}</text>
-    </view>
-
-    <view class="card-balance">
-      <text class="currency">¥</text>
-      <text class="amount">{{card.currentCardValue}}</text>
-    </view>
-
-    <view class="card-footer">
-      <text class="card-number">{{card.maskedCardNumber}}</text>
-      <text class="card-expiry">Exp: {{card.expiryDate}}</text>
-    </view>
+<!-- pages/index/index.wxml -->
+<view class="container" style="padding: 16px; background: #121212; min-height: 100vh;">
+  
+  <view class="header" style="margin-bottom: 20px;">
+    <view style="font-size: 22px; font-weight: bold; color: #ffffff;">💳 Мой Кошелек</view>
+    <view style="font-size: 13px; color: #888888; margin-top: 4px;">Ваши активные ваучеры и быстрая оплата СБП</view>
   </view>
 
-
-  <view class="loading" wx:else>
-    <text>Загрузка баланса...</text>
-  </view>
-
-
-  <button class="scan-btn" bindtap="handleScanQR">
-    📷 Сканировать QR для оплаты
+  <!-- Кнопка перехода в сканер -->
+  <button 
+    bindtap="goToScanner" 
+    style="background: #07c160; color: #ffffff; font-size: 15px; border-radius: 20px; margin-bottom: 20px; font-weight: bold;">
+    📷 Сканировать QR СБП
   </button>
+
+  <!-- Список карт пользователя -->
+  <view class="cards-section">
+    <view style="font-size: 16px; font-weight: bold; color: #ffffff; margin-bottom: 12px;">Доступные карты:</view>
+
+    <block wx:for="{{userCards}}" wx:key="id">
+      <view class="card-item" style="background: #1e1e1e; border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid #2a2a2a;">
+        <view style="display: flex; justify-content: space-between; align-items: center;">
+          <view style="color: #ffffff; font-size: 16px; font-weight: 600;">{{item.cardName}}</view>
+          <view style="color: #07c160; font-size: 12px; border: 1px solid #07c160; padding: 2px 8px; border-radius: 10px;">
+            {{item.status}}
+          </view>
+        </view>
+
+        <view style="margin-top: 12px; color: #ffffff; font-size: 20px; font-weight: bold;">
+          {{item.balanceRUB}} ₽ <text style="color: #777; font-size: 14px; font-weight: normal;">(≈ {{item.balanceCNY}} ¥)</text>
+        </view>
+
+        <view style="margin-top: 8px; color: #666; font-size: 12px;">
+          Карта: {{item.cardNumber}}
+        </view>
+      </view>
+    </block>
+
+    <!-- Если карт нет -->
+    <view wx:if="{{userCards.length === 0}}" style="color: #666; text-align: center; margin-top: 20px;">
+      У вас пока нет активных карт. Перейдите в «Витрину», чтобы приобрести ваучер.
+    </view>
+  </view>
+
 </view>

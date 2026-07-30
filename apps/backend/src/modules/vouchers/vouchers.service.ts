@@ -1,51 +1,85 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { DigitalGiftCard } from '@fintech/shared-types';
+// apps/backend/src/modules/vouchers/vouchers.service.ts
+import { Injectable } from '@nestjs/common';
+
+export interface Brand {
+  id: string;
+  name: string;
+  logoUrl: string;
+  category: string;
+}
+
+export interface GiftCardTemplate {
+  id: string;
+  brandId: string;
+  title: string;
+  amountRUB: number;
+  priceCNY: number;
+  isSet: boolean; // Флаг: одиночная карта или сет карт
+}
 
 @Injectable()
 export class VouchersService {
-  private cards: DigitalGiftCard[] = [
-    {
-      id: 'card_888',
-      maskedCardNumber: '**** **** **** 8888',
-      currentCardValue: 500.0,
-      currency: 'CNY',
-      status: 'ACTIVE',
-      expiryDate: '2027-12-31',
-    },
+  // Временный mock-каталог брендов
+  private brands: Brand[] = [
+    { id: 'b1', name: 'Перекрёсток', logoUrl: '/assets/perekrestok.png', category: 'Супермаркеты' },
+    { id: 'b2', name: 'Ашан', logoUrl: '/assets/auchan.png', category: 'Гипермаркеты' },
   ];
 
-  getUserCards(): DigitalGiftCard[] {
-    return this.cards;
-  }
+  // Временный mock-каталог шаблонов карт
+  private templates: GiftCardTemplate[] = [
+    { id: 't1', brandId: 'b1', title: 'Перекрёсток 1 000 ₽', amountRUB: 1000, priceCNY: 82, isSet: false },
+    { id: 't2', brandId: 'b1', title: 'Перекрёсток 3 000 ₽', amountRUB: 3000, priceCNY: 245, isSet: false },
+    { id: 't3', brandId: 'b2', title: 'Ашан 2 000 ₽', amountRUB: 2000, priceCNY: 164, isSet: false },
+    { id: 't4', brandId: 'b1', title: 'Туристический Сет (Перекрёсток + Ашан)', amountRUB: 5000, priceCNY: 410, isSet: true },
+  ];
 
-
-  redeemVoucher(payload: { cardId: string; rawQrData: string; amountCNY: number }) {
-    const card = this.cards.find((c) => c.id === payload.cardId);
-
-    if (!card) {
-      throw new NotFoundException('Карта не найдена');
-    }
-
-    if (card.status !== 'ACTIVE') {
-      throw new BadRequestException('Карта неактивна');
-    }
-
-    if (card.currentCardValue < payload.amountCNY) {
-      throw new BadRequestException('Недостаточно средств на балансе');
-    }
-
-
-    card.currentCardValue = Number((card.currentCardValue - payload.amountCNY).toFixed(2));
-
-    const transactionId = `tx_${Date.now()}`;
-
+  // Метод получения каталога для Витрины
+  getCatalog() {
     return {
-      success: true,
-      transactionId,
-      remainingBalance: card.currentCardValue,
-      deductedAmount: payload.amountCNY,
-      currency: card.currency,
-      timestamp: new Date().toISOString(),
+      brands: this.brands,
+      templates: this.templates,
     };
   }
+
+  // Метод получения купленных карт пользователя
+  getUserCards(userId: string) {
+    return this.userVouchers;
+  }
+
+  // Хранилище купленных ваучеров в памяти (пока нет БД)
+  private userVouchers = [
+    {
+      id: 'v-101',
+      cardName: 'Перекрёсток VIP Card',
+      balanceRUB: 3000,
+      balanceCNY: 245,
+      cardNumber: '**** 8892',
+      status: 'ACTIVE',
+    }
+  ];
+
+  // Новый метод для покупки карты/сета
+  buyVoucher(templateId: string) {
+  const template = this.templates.find((t) => t.id === templateId);
+  if (!template) {
+    throw new Error('Шаблон карты не найден');
+  }
+
+  const newVoucher = {
+    id: `v-${Date.now()}`,
+    cardName: template.title,
+    balanceRUB: template.amountRUB,
+    balanceCNY: template.priceCNY,
+    cardNumber: `**** ${Math.floor(1000 + Math.random() * 9000)}`,
+    status: 'ACTIVE',
+  };
+
+  this.userVouchers.push(newVoucher);
+
+  return {
+    success: true,
+    message: 'Ваучер успешно куплен!',
+    voucher: newVoucher,
+  };
+}
 }

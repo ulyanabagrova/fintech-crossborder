@@ -1,73 +1,30 @@
-import { request } from '../../utils/request';
+// pages/index/index.js
+const request = require('../../utils/request.js');
 
 Page({
   data: {
-    card: null,
+    userCards: [],
+    loading: false
   },
 
   onLoad() {
-    this.fetchUserCard();
+    this.fetchUserCards();
   },
 
-
-  async fetchUserCard() {
+  // Загружаем только карты текущего пользователя
+  async fetchUserCards() {
     try {
-      const cards = await request('/api/v1/vouchers/my-cards');
-      if (cards && cards.length > 0) {
-        this.setData({ card: cards[0] });
-      }
+      const res = await request('/api/v1/vouchers/my-cards');
+      this.setData({ userCards: res });
     } catch (err) {
-      console.error('Ошибка загрузки карты:', err);
+      console.error('Ошибка загрузки карт:', err);
     }
   },
 
-  handleScanQR() {
-    const self = this;
-    const mockQrData = 'FT_REDEEM|pos_terminal_01|batch_456|50.00|CNY|a7e4d8f';
-
-    wx.scanCode({
-      onlyFromCamera: false,
-      scanType: ['qrCode'],
-      success(res) {
-        console.log('Успешный QR:', res.result);
-        self.processRedemption(res.result);
-      },
-      fail(err) {
-        console.log('Симулятор DevTools не смог распарсить QR (это нормально). Запускаем тест:', err);
-        
-        self.processRedemption(mockQrData);
-      }
+  // Навигация на страницу сканера СБП
+  goToScanner() {
+    wx.navigateTo({
+      url: '/pages/scan/scan'
     });
-  },
-
-
-  async processRedemption(qrData) {
-    if (!this.data.card) return;
-
-    wx.showLoading({ title: 'Обработка QR...' });
-
-    try {
-      const response = await request('/api/v1/clearing/process', 'POST', {
-        cardId: this.data.card.id,
-        rawQrData: qrData,
-      });
-
-      wx.hideLoading();
-
-      if (response && response.status === 'CLEARED') {
-        wx.showToast({ 
-          title: `Списано ¥${response.details.deductedAmount}`, 
-          icon: 'success' 
-        });
-
-      
-        this.setData({
-          'card.currentCardValue': response.details.remainingBalance
-        });
-      }
-    } catch (err) {
-      wx.hideLoading();
-      console.error('Ошибка при списании:', err);
-    }
   }
 });

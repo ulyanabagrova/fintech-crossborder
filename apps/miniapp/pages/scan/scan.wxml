@@ -1,0 +1,61 @@
+<!-- pages/scan/scan.wxml -->
+<view class="container" style="padding: 20px; background: #121212; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; box-sizing: border-box;">
+
+  <!-- Состояние: Ожидание/Процесс сканирования -->
+  <view wx:if="{{!paymentResult}}" style="text-align: center; width: 100%;">
+    <view style="font-size: 50px; margin-bottom: 20px;">📷</view>
+    <view style="color: #ffffff; font-size: 20px; font-weight: bold; margin-bottom: 10px;">Сканирование QR СБП</view>
+    <view style="color: #888888; font-size: 14px; margin-bottom: 30px; padding: 0 20px;">
+      Наведите камеру на кассовый QR-код НСПК или нажмите кнопку ниже для запуска
+    </view>
+
+    <button 
+      bindtap="startScan" 
+      style="background: #07c160; color: #ffffff; font-size: 16px; font-weight: bold; padding: 12px 30px; border-radius: 25px; margin-bottom: 16px;">
+      Запустить сканер
+    </button>
+  </view>
+
+  <!-- Состояние: Чек об успешной оплате (security-vault) -->
+  <view wx:if="{{paymentResult}}" style="width: 100%; background: #1e1e1e; border-radius: 20px; padding: 24px; border: 1px solid #2a2a2a; box-sizing: border-box;">
+    
+    <view style="text-align: center; margin-bottom: 20px;">
+      <view style="font-size: 40px; margin-bottom: 8px;">🎉</view>
+      <view style="color: #07c160; font-size: 20px; font-weight: bold;">Оплата прошла!</view>
+      <view style="color: #888888; font-size: 12px; margin-top: 4px;">Клиринг подтверждён СБП</view>
+    </view>
+
+    <view style="border-top: 1px dashed #333; border-bottom: 1px dashed #333; padding: 16px 0; margin-bottom: 20px;">
+      <view style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <text style="color: #888888; font-size: 14px;">Магазин:</text>
+        <text style="color: #ffffff; font-size: 14px; font-weight: 500; text-align: right; max-width: 60%;">{{paymentResult.transaction.merchantName}}</text>
+      </view>
+
+      <view style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+        <text style="color: #888888; font-size: 14px;">Списано:</text>
+        <text style="color: #ff4d4f; font-size: 16px; font-weight: bold;">-{{paymentResult.transaction.amountRUB}} ₽</text>
+      </view>
+
+      <view style="display: flex; justify-content: space-between;">
+        <text style="color: #888888; font-size: 14px;">Остаток на карте:</text>
+        <text style="color: #07c160; font-size: 14px; font-weight: bold;">{{paymentResult.remainingBalanceRUB}} ₽</text>
+      </view>
+    </view>
+
+    <!-- HMAC подпись security-vault -->
+    <view style="background: #141414; border-radius: 8px; padding: 10px; margin-bottom: 20px;">
+      <view style="color: #666666; font-size: 10px; margin-bottom: 4px;">Security Vault Signature (SHA-256):</view>
+      <view style="color: #07c160; font-size: 10px; font-family: monospace; word-break: break-all;">
+        {{paymentResult.transaction.signature}}
+      </view>
+    </view>
+
+    <button 
+      bindtap="goHome" 
+      style="background: #2a2a2a; color: #ffffff; font-size: 14px; padding: 10px 20px; border-radius: 20px;">
+      Вернуться в Кошелёк
+    </button>
+
+  </view>
+
+</view>

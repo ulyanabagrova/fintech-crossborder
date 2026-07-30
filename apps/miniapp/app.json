@@ -1,6 +1,9 @@
 {
   "pages": [
-    "pages/index/index"
+    "pages/index/index",
+    "pages/scan/scan",
+    "pages/store/store",
+    "pages/history/history"
   ],
   "window": {
     "backgroundTextStyle": "dark",

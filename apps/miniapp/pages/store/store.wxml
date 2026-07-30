@@ -1,0 +1,33 @@
+<!-- pages/store/store.wxml -->
+<view class="container" style="padding: 16px; background: #121212; min-height: 100vh;">
+  <view class="header" style="margin-bottom: 20px;">
+    <view style="font-size: 22px; font-weight: bold; color: #ffffff;">🛒 Витрина ваучеров</view>
+    <view style="font-size: 13px; color: #888888; margin-top: 4px;">Выберите предоплаченную карту или сет для покупок в РФ</view>
+  </view>
+
+  <!-- Список доступных карт -->
+  <view class="catalog-list">
+    <block wx:for="{{catalog.templates}}" wx:key="id">
+      <view class="store-card-item" style="background: #1e1e1e; border-radius: 16px; padding: 18px; margin-bottom: 14px; border: 1px solid #2a2a2a; display: flex; justify-content: space-between; align-items: center;">
+        
+        <view class="card-details">
+          <view style="color: #ffffff; font-size: 16px; font-weight: 600;">{{item.title}}</view>
+          <view style="color: #07c160; font-size: 14px; font-weight: bold; margin-top: 6px;">
+            {{item.amountRUB}} ₽ <text style="color: #777777; font-weight: normal; font-size: 12px;">(≈ {{item.priceCNY}} ¥)</text>
+          </view>
+          <view wx:if="{{item.isSet}}" style="display: inline-block; background: rgba(255, 165, 0, 0.15); color: #ffa500; font-size: 10px; padding: 2px 8px; border-radius: 4px; margin-top: 6px;">
+            Туристический сет
+          </view>
+        </view>
+
+        <button 
+          bindtap="buyCard" 
+          data-id="{{item.id}}" 
+          style="background: #07c160; color: #ffffff; font-size: 13px; font-weight: bold; padding: 8px 18px; border-radius: 20px; margin: 0;">
+          Купить
+        </button>
+
+      </view>
+    </block>
+  </view>
+</view>

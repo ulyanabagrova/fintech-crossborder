@@ -5,15 +5,18 @@ import { VouchersService } from './vouchers.service';
 export class VouchersController {
   constructor(private readonly vouchersService: VouchersService) {}
 
-  @Get('my-cards')
-  getMyCards() {
-    return this.vouchersService.getUserCards();
+  @Get('catalog')
+  getCatalog() {
+    return this.vouchersService.getCatalog();
   }
 
-  @Post('redeem')
-  redeemCard(
-    @Body() body: { cardId: string; rawQrData: string; amountCNY: number },
-  ) {
-    return this.vouchersService.redeemVoucher(body);
+  @Get('my-cards')
+  getMyCards() {
+    return this.vouchersService.getUserCards('user-demo-1');
+  }
+
+  @Post('buy')
+  buyVoucher(@Body() body: { templateId: string }) {
+    return this.vouchersService.buyVoucher(body.templateId);
   }
 }
