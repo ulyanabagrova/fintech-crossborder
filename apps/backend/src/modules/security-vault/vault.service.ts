@@ -20,10 +20,22 @@ export class VaultService {
 
   // Валидация подписи транзакции
   verifyHmacSignature(data: string, signature: string): boolean {
+    if (!signature || typeof signature !== 'string') {
+      return false;
+    }
+
     const expectedSignature = this.generateHmacSignature(data);
-    return crypto.timingSafeEqual(
-      Buffer.from(expectedSignature, 'hex'),
-      Buffer.from(signature, 'hex'),
-    );
+    const expectedBuffer = Buffer.from(expectedSignature, 'hex');
+    const providedBuffer = Buffer.from(signature, 'hex');
+
+    if (expectedBuffer.length !== providedBuffer.length) {
+      return false;
+    }
+
+    try {
+      return crypto.timingSafeEqual(expectedBuffer, providedBuffer);
+    } catch {
+      return false;
+    }
   }
 }
