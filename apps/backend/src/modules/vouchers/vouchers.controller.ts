@@ -1,22 +1,28 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Query, Param, Patch, Body } from '@nestjs/common';
 import { VouchersService } from './vouchers.service';
 
-@Controller('api/v1/vouchers')
+@Controller('vouchers')
 export class VouchersController {
   constructor(private readonly vouchersService: VouchersService) {}
 
-  @Get('catalog')
-  getCatalog() {
-    return this.vouchersService.getCatalog();
+  // GET /api/v1/vouchers/sets
+  @Get('sets')
+  async getVoucherSets() {
+    return this.vouchersService.getVoucherSets();
   }
 
-  @Get('my-cards')
-  getMyCards() {
-    return this.vouchersService.getUserCards('user-demo-1');
+  // GET /api/v1/vouchers/cards  <-- ИМЕННО ЭТОТ РУТ ИЩЕТ WECHAT
+  @Get('cards')
+  async getAllCards() {
+    return this.vouchersService.getAllCards();
   }
 
-  @Post('buy')
-  buyVoucher(@Body() body: { templateId: string }) {
-    return this.vouchersService.buyVoucher(body.templateId);
+  // GET /api/v1/vouchers/user/:userId
+  @Get('user/:userId')
+  async getUserCards(
+    @Param('userId') userId: string,
+    @Query('merchantKey') merchantKey?: string,
+  ) {
+    return this.vouchersService.getUserCards(userId, merchantKey);
   }
 }

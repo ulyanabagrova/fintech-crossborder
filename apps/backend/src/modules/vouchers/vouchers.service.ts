@@ -1,85 +1,150 @@
-// apps/backend/src/modules/vouchers/vouchers.service.ts
-import { Injectable } from '@nestjs/common';
-
-export interface Brand {
-  id: string;
-  name: string;
-  logoUrl: string;
-  category: string;
-}
-
-export interface GiftCardTemplate {
-  id: string;
-  brandId: string;
-  title: string;
-  amountRUB: number;
-  priceCNY: number;
-  isSet: boolean; // Флаг: одиночная карта или сет карт
-}
+import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class VouchersService {
-  // Временный mock-каталог брендов
-  private brands: Brand[] = [
-    { id: 'b1', name: 'Перекрёсток', logoUrl: '/assets/perekrestok.png', category: 'Супермаркеты' },
-    { id: 'b2', name: 'Ашан', logoUrl: '/assets/auchan.png', category: 'Гипермаркеты' },
-  ];
+  constructor(private readonly supabase: SupabaseClient) {}
 
-  // Временный mock-каталог шаблонов карт
-  private templates: GiftCardTemplate[] = [
-    { id: 't1', brandId: 'b1', title: 'Перекрёсток 1 000 ₽', amountRUB: 1000, priceCNY: 82, isSet: false },
-    { id: 't2', brandId: 'b1', title: 'Перекрёсток 3 000 ₽', amountRUB: 3000, priceCNY: 245, isSet: false },
-    { id: 't3', brandId: 'b2', title: 'Ашан 2 000 ₽', amountRUB: 2000, priceCNY: 164, isSet: false },
-    { id: 't4', brandId: 'b1', title: 'Туристический Сет (Перекрёсток + Ашан)', amountRUB: 5000, priceCNY: 410, isSet: true },
-  ];
+  // 1. Получение активных сетов (со вложенными картами без конфликтов Foreign Key)
+  async getVoucherSets() {
+    try {
+      // Шаг A: Получаем список активных сетов
+      const { data: sets, error: setsError } = await this.supabase
+        .from('voucher_sets')
+        .select('*')
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
 
-  // Метод получения каталога для Витрины
-  getCatalog() {
-    return {
-      brands: this.brands,
-      templates: this.templates,
-    };
-  }
+      if (setsError) {
+        console.error('🔥 Ошибка Supabase при получении voucher_sets:', setsError);
+        throw new InternalServerErrorException(`Ошибка БД: ${setsError.message}`);
+      }
 
-  // Метод получения купленных карт пользователя
-  getUserCards(userId: string) {
-    return this.userVouchers;
-  }
+      if (!sets || sets.length === 0) {
+        return [];
+      }
 
-  // Хранилище купленных ваучеров в памяти (пока нет БД)
-  private userVouchers = [
-    {
-      id: 'v-101',
-      cardName: 'Перекрёсток VIP Card',
-      balanceRUB: 3000,
-      balanceCNY: 245,
-      cardNumber: '**** 8892',
-      status: 'ACTIVE',
+      // Шаг B: Забираем карты, привязанные к этим сетам
+      const setIds = sets.map((s) => s.id);
+      const { data: cards, error: cardsError } = await this.supabase
+        .from('voucher_cards')
+        .select('id, store_name, balance_rub, set_id')
+        .in('set_id', setIds);
+
+      if (cardsError) {
+        console.error('🔥 Ошибка при получении карт для сетов:', cardsError);
+      }
+
+      // Шаг C: Группируем карты внутрь соответствующих сетов
+      const setsWithCards = sets.map((set) => ({
+        ...set,
+        voucher_cards: (cards || []).filter((card) => card.set_id === set.id),
+      }));
+
+      return setsWithCards;
+    } catch (err) {
+      console.error('🔥 VouchersService getVoucherSets Error:', err);
+      throw err;
     }
-  ];
-
-  // Новый метод для покупки карты/сета
-  buyVoucher(templateId: string) {
-  const template = this.templates.find((t) => t.id === templateId);
-  if (!template) {
-    throw new Error('Шаблон карты не найден');
   }
 
-  const newVoucher = {
-    id: `v-${Date.now()}`,
-    cardName: template.title,
-    balanceRUB: template.amountRUB,
-    balanceCNY: template.priceCNY,
-    cardNumber: `**** ${Math.floor(1000 + Math.random() * 9000)}`,
-    status: 'ACTIVE',
-  };
+  // 2. Получение всех отдельных карт (Каталог карт под сетами)
+  async getAllCards() {
+    try {
+      const { data, error } = await this.supabase
+        .from('voucher_cards')
+        .select(`
+          id,
+          store_name,
+          balance_rub,
+          status,
+          created_at,
+          voucher_categories (
+            id,
+            name,
+            slug
+          )
+        `)
+        .eq('status', 'active')
+        .order('created_at', { ascending: false });
 
-  this.userVouchers.push(newVoucher);
+      if (error) {
+        console.error('🔥 Ошибка Supabase при получении voucher_cards:', error);
+        throw new InternalServerErrorException(`Ошибка БД: ${error.message}`);
+      }
 
-  return {
-    success: true,
-    message: 'Ваучер успешно куплен!',
-    voucher: newVoucher,
-  };
-}
+      return data || [];
+    } catch (err) {
+      console.error('🔥 VouchersService getAllCards Error:', err);
+      return [];
+    }
+  }
+
+  // 3. Вызов генерации случайного сета в Supabase
+  async generateSet(categorySlug: string, maxBudgetRub: number) {
+    try {
+      const { data, error } = await this.supabase.rpc('generate_random_voucher_set', {
+        target_category_slug: categorySlug,
+        max_budget_rub: maxBudgetRub,
+        cny_rate: 10.0,
+      });
+
+      if (error) {
+        console.error('🔥 Ошибка RPC generate_random_voucher_set:', error);
+        throw new InternalServerErrorException(error.message);
+      }
+
+      return { success: true, setId: data };
+    } catch (err) {
+      console.error('🔥 VouchersService generateSet Error:', err);
+      throw err;
+    }
+  }
+
+  // 4. Получение карт конкретного пользователя
+  async getUserCards(userId: string, merchantKey?: string) {
+    try {
+      let query = this.supabase
+        .from('user_vouchers')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (merchantKey) {
+        query = query.eq('merchant_key', merchantKey);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        console.error('🔥 Ошибка Supabase при получении user_vouchers:', error);
+        throw error;
+      }
+
+      return data || [];
+    } catch (err) {
+      console.error('🔥 VouchersService getUserCards Error:', err);
+      return [];
+    }
+  }
+
+  // 5. Обновление баланса карты
+  async updateCardBalance(cardId: string, newBalance: number) {
+    try {
+      const { data, error } = await this.supabase
+        .from('user_vouchers')
+        .update({ balance: newBalance })
+        .eq('id', cardId)
+        .select()
+        .maybeSingle();
+
+      if (error || !data) {
+        throw new NotFoundException(`Не удалось обновить карту ${cardId}`);
+      }
+
+      return data;
+    } catch (err) {
+      console.error('🔥 VouchersService updateCardBalance Error:', err);
+      throw err;
+    }
+  }
 }

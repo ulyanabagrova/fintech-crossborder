@@ -27,7 +27,9 @@ export class RetailGatewayService {
   async processSbpPayment(qrPayload: string, userId: string, signature?: string) {
     const amountRUB = 450;
     const amountCNY = 55; // Эквивалент по курсу
-    const merchantName = this.extractMerchantName(qrPayload);
+    const merchantContext = this.extractMerchantContext(qrPayload);
+    const merchantName = merchantContext.name;
+    const merchantKey = merchantContext.key;
 
     // 1. Проверяем подпись входного запроса, если она передана
     if (signature) {
@@ -38,12 +40,19 @@ export class RetailGatewayService {
       }
     }
 
-    // 2. Проверяем баланс карт пользователя
-    const userCards = this.vouchersService.getUserCards(userId);
-    const activeCard = userCards.find((card) => card.status === 'ACTIVE');
+    // 2. Проверяем баланс карт пользователя и выбираем только карту нужного магазина
+    const userCards = await this.vouchersService.getUserCards(userId, merchantKey);
+    const eligibleCards = userCards.filter((card) => {
+      if (!merchantKey) {
+        return String(card.status).toUpperCase() === 'ACTIVE';
+      }
+
+      return String(card.status).toUpperCase() === 'ACTIVE' && this.matchesMerchant(card, merchantKey);
+    });
+    const activeCard = eligibleCards[0];
 
     if (!activeCard) {
-      throw new BadRequestException('Нет активных ваучеров для списания');
+      throw new BadRequestException(`Нет активной карты для магазина ${merchantName}`);
     }
 
     if (activeCard.balanceRUB < amountRUB) {
@@ -51,7 +60,10 @@ export class RetailGatewayService {
     }
 
     // 3. Списываем средства
-    activeCard.balanceRUB -= amountRUB;
+    const updatedBalance = activeCard.balanceRUB - amountRUB;
+    activeCard.balanceRUB = updatedBalance;
+
+    await this.vouchersService.updateCardBalance(activeCard.id, updatedBalance);
 
     // 4. Подписываем результат через Vault
     const txId = `sbp-tx-${Date.now()}`;
@@ -79,22 +91,33 @@ export class RetailGatewayService {
     };
   }
 
-  private extractMerchantName(qrPayload: string) {
+  private extractMerchantContext(qrPayload: string) {
     if (!qrPayload) {
-      return 'Тестовый мерчант СБП';
+      return { name: 'Тестовый мерчант СБП', key: '' };
     }
 
     const normalizedPayload = qrPayload.toLowerCase();
 
     if (normalizedPayload.includes('perekrestok') || normalizedPayload.includes('перекрёсток')) {
-      return 'Перекрёсток (Москва, ТЦ Цветной)';
+      return { name: 'Перекрёсток (Москва, ТЦ Цветной)', key: 'perekrestok' };
     }
 
     if (normalizedPayload.includes('auchan') || normalizedPayload.includes('ашан')) {
-      return 'Ашан (Москва, ТЦ Красная Площадь)';
+      return { name: 'Ашан (Москва, ТЦ Красная Площадь)', key: 'auchan' };
     }
 
-    return 'Тестовый мерчант СБП';
+    return { name: 'Тестовый мерчант СБП', key: '' };
+  }
+
+  private matchesMerchant(card: { merchantId?: string }, merchantKey: string) {
+    if (!card.merchantId || !merchantKey) {
+      return false;
+    }
+
+    const normalizedCard = String(card.merchantId).toLowerCase();
+    const normalizedKey = merchantKey.toLowerCase();
+
+    return normalizedCard.includes(normalizedKey) || normalizedKey.includes(normalizedCard);
   }
 
   // Получить историю операций
