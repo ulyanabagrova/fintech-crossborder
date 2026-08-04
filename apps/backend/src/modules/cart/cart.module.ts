@@ -1,10 +1,12 @@
 import { Module } from '@nestjs/common';
 import { CartController } from './cart.controller';
 import { CartService } from './cart.service';
-import { AuthModule } from '../auth/auth.module';
+import { SupabaseModule } from '../../database/supabase.module'; // <-- Вот правильный относительный путь!
 
 @Module({
-  imports: [AuthModule],
+  imports: [
+    SupabaseModule, // <-- Импортируем модуль базы данных
+  ],
   controllers: [CartController],
   providers: [CartService],
   exports: [CartService],

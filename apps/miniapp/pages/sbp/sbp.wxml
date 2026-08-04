@@ -1,0 +1,40 @@
+<view class="container">
+  <!-- Блок 1: Если QR ещё не сосканирован -->
+  <view class="scan-box" wx:if="{{!scannedData}}">
+    <view class="icon-wrap">📱</view>
+    <text class="title">Сканирование QR-кода</text>
+    <text class="subtitle">Отсканируйте код на кассе или загрузите из галереи</text>
+
+    <button class="primary-btn" bindtap="openCameraScan">
+      📷 Включить камеру
+    </button>
+    
+    <button class="secondary-btn" bindtap="openGalleryScan">
+      🖼️ Загрузить из галереи
+    </button>
+  </view>
+
+  <!-- Блок 2: Карточка подтверждения платежа после считывания -->
+  <view class="payment-card" wx:else>
+    <view class="status-badge">QR-код распознан</view>
+    
+    <view class="info-row">
+      <text class="label">Магазин</text>
+      <text class="value highlight">{{scannedData.store}}</text>
+    </view>
+    
+    <view class="info-row">
+      <text class="label">Сумма к оплате</text>
+      <text class="value price">{{scannedData.amount}} ₽</text>
+    </view>
+
+    <view class="actions">
+      <button class="confirm-btn" bindtap="submitPayment" loading="{{loading}}">
+        Подтвердить и оплатить
+      </button>
+      <button class="cancel-btn" bindtap="resetScan">
+        Сканировать другой
+      </button>
+    </view>
+  </view>
+</view>

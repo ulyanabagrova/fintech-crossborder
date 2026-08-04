@@ -1,9 +1,14 @@
 {
   "pages": [
+    "pages/auth/index",
     "pages/index/index",
+    "pages/cart/cart",
     "pages/scan/scan",
     "pages/store/store",
-    "pages/history/history"
+    "pages/history/history",
+    "pages/admin/add-card/add-card",
+    "pages/cards/cards",
+    "pages/sbp/sbp"
   ],
   "window": {
     "backgroundTextStyle": "dark",

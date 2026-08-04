@@ -1,0 +1,42 @@
+<view class="container">
+  <view class="header">
+    <text class="title">Мои купленные карты</text>
+  </view>
+
+  <view wx:if="{{userCards.length === 0 && !loading}}" class="empty-state">
+    <text>У вас пока нет купленных карт</text>
+  </view>
+
+  <view class="cards-list">
+    <block wx:for="{{userCards}}" wx:key="id">
+      <view class="card-item">
+        <view class="card-header">
+          <text class="store-name">{{item.store_name || 'Ваучер'}}</text>
+          <text class="status-tag status-{{item.status}}">{{item.status || 'Активна'}}</text>
+        </view>
+        
+        <view class="card-body">
+          <view class="balance-block">
+            <text class="label">Баланс:</text>
+            <text class="balance">{{item.balance_rub}} ₽</text>
+          </view>
+          
+          <view class="code-block" wx:if="{{item.code}}">
+            <text class="label">Код активации:</text>
+            <text class="code">{{item.code}}</text>
+          </view>
+        </view>
+
+  <!-- Фиксированная кнопка внизу -->
+
+      </view>
+
+    </block>
+      <view class="bottom-qr-bar">
+    <button class="qr-pay-btn" bindtap="goToQrPay">
+      📷 Оплатить по QR-коду
+    </button>
+  </view>
+
+  </view>
+</view>

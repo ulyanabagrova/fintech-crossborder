@@ -156,4 +156,36 @@ export class CartService {
     if (error) throw new InternalServerErrorException(error.message);
     return { success: true };
   }
+  async checkout(userId: string) {
+  // 1. Берем товары из корзины
+  const cartItems = await this.getUserCart(userId);
+
+  if (!cartItems || cartItems.length === 0) {
+    throw new BadRequestException('Корзина пуста');
+  }
+
+  // 2. Формируем массив купленных карт
+  const newCards = cartItems.map((item: any) => ({
+    user_id: userId,
+    voucher_id: item.card_id || item.item_id || item.id,
+    title: item.details?.store_name || item.details?.title || 'Подарочная карта',
+    balance_rub: item.details?.balance_rub || item.details?.total_price_rub || 0,
+    code: 'CARD-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+    status: 'ACTIVE',
+  }));
+
+  // 3. Вставляем в таблицу user_cards
+  const { error: insertErr } = await this.supabase
+    .from('user_cards')
+    .insert(newCards);
+
+  if (insertErr) {
+    throw new Error(`Ошибка при сохранении карт: ${insertErr.message}`);
+  }
+
+  // 4. Очищаем корзину после успешной покупки
+  await this.clearCart(userId);
+
+  return { success: true, message: 'Покупка прошла успешно' };
+}
 }

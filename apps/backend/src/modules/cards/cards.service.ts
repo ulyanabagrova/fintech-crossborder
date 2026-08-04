@@ -1,12 +1,14 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { SupabaseClient } from '@supabase/supabase-js';
 
 @Injectable()
 export class CardsService {
-  constructor(private readonly supabase: any) {} // Твой Supabase client
+  // Внедряем именно SupabaseClient, который экспортирует SupabaseModule
+  constructor(private readonly supabase: SupabaseClient) {}
 
   // Логика покупки
   async buyCard(userId: string, cardId: string, type: string) {
-    // 1. Находим карту/сет в общей базе (например, из таблицы voucher_cards)
+    // 1. Находим карту/сет в общей базе
     const { data: card, error: fetchErr } = await this.supabase
       .from(type === 'set' ? 'voucher_sets' : 'voucher_cards')
       .select('*')
@@ -25,8 +27,8 @@ export class CardsService {
         voucher_id: card.id,
         title: card.store_name || card.title || 'Ваучер',
         balance_rub: card.balance_rub || card.total_price_rub,
-        code: 'CARD-' + Math.random().toString(36).substring(2, 9).toUpperCase(), // Генерируем код
-        status: 'ACTIVE'
+        code: 'CARD-' + Math.random().toString(36).substring(2, 9).toUpperCase(),
+        status: 'ACTIVE',
       })
       .select()
       .single();

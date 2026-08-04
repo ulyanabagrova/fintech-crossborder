@@ -1,0 +1,10 @@
+<view class="auth-container">
+  <view class="logo-box">
+    <text class="title">Добро пожаловать</text>
+    <text class="subtitle">Войдите через WeChat для доступа к картам</text>
+  </view>
+
+  <button class="btn-primary" bindtap="handleWechatLogin">
+    Войти через WeChat
+  </button>
+</view>

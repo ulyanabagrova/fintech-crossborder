@@ -10,7 +10,10 @@
   ],
   "scripts": {
     "build": "pnpm --filter @fintech/shared-types build && pnpm --filter backend build",
-    "start:backend": "pnpm --filter backend start:dev",
+    "start:backend": "cd apps/backend && pnpm start:dev",
     "lint": "eslint \"{apps,packages}/**/*.ts\""
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3"
   }
 }

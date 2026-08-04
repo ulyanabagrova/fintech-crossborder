@@ -1,0 +1,107 @@
+.container {
+  padding: 40rpx 30rpx;
+  background-color: #f7f8fa;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.scan-box {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 60rpx 40rpx;
+  text-align: center;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.icon-wrap {
+  font-size: 80rpx;
+  margin-bottom: 20rpx;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #1a1a1a;
+  display: block;
+}
+
+.subtitle {
+  font-size: 26rpx;
+  color: #8c8c8c;
+  margin-top: 10rpx;
+  margin-bottom: 50rpx;
+  display: block;
+}
+
+.primary-btn {
+  background: #07c160;
+  color: #ffffff;
+  border-radius: 50rpx;
+  font-size: 30rpx;
+  margin-bottom: 20rpx;
+}
+
+.secondary-btn {
+  background: #f2f3f5;
+  color: #323233;
+  border-radius: 50rpx;
+  font-size: 30rpx;
+}
+
+/* Чек подтверждения */
+.payment-card {
+  background: #ffffff;
+  border-radius: 24rpx;
+  padding: 40rpx;
+  box-shadow: 0 4rpx 20rpx rgba(0, 0, 0, 0.05);
+}
+
+.status-badge {
+  display: inline-block;
+  background: #e8f4ff;
+  color: #1989fa;
+  font-size: 24rpx;
+  padding: 8rpx 20rpx;
+  border-radius: 30rpx;
+  margin-bottom: 30rpx;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.label {
+  color: #8c8c8c;
+  font-size: 28rpx;
+}
+
+.value {
+  font-weight: 600;
+  font-size: 28rpx;
+  color: #1a1a1a;
+}
+
+.price {
+  font-size: 36rpx;
+  color: #ee0a24;
+}
+
+.actions {
+  margin-top: 40rpx;
+}
+
+.confirm-btn {
+  background: #1989fa;
+  color: #ffffff;
+  border-radius: 50rpx;
+  margin-bottom: 20rpx;
+}
+
+.cancel-btn {
+  background: transparent;
+  color: #8c8c8c;
+  font-size: 28rpx;
+}

@@ -1,45 +1,61 @@
-<!-- pages/index/index.wxml -->
-<view class="container" style="padding: 16px; background: #121212; min-height: 100vh;">
-  
-  <view class="header" style="margin-bottom: 20px;">
-    <view style="font-size: 22px; font-weight: bold; color: #ffffff;">💳 Мой Кошелек</view>
-    <view style="font-size: 13px; color: #888888; margin-top: 4px;">Ваши активные ваучеры и быстрая оплата СБП</view>
-  </view>
+<view class="page-container">
 
-  <!-- Кнопка перехода в сканер -->
-  <button 
-    bindtap="goToScanner" 
-    style="background: #07c160; color: #ffffff; font-size: 15px; border-radius: 20px; margin-bottom: 20px; font-weight: bold;">
-    📷 Сканировать QR СБП
-  </button>
-
-  <!-- Список карт пользователя -->
-  <view class="cards-section">
-    <view style="font-size: 16px; font-weight: bold; color: #ffffff; margin-bottom: 12px;">Доступные карты:</view>
-
-    <block wx:for="{{userCards}}" wx:key="id">
-      <view class="card-item" style="background: #1e1e1e; border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1px solid #2a2a2a;">
-        <view style="display: flex; justify-content: space-between; align-items: center;">
-          <view style="color: #ffffff; font-size: 16px; font-weight: 600;">{{item.cardName}}</view>
-          <view style="color: #07c160; font-size: 12px; border: 1px solid #07c160; padding: 2px 8px; border-radius: 10px;">
-            {{item.status}}
-          </view>
+  <!-- СЕКЦИЯ СЕТОВ -->
+  <view class="section-title">Сеты ваучеров</view>
+  <view class="card-list">
+    <block wx:for="{{voucherSets}}" wx:key="id">
+      <view class="card-item">
+        <view class="card-info">
+          <text class="card-title">{{item.title || 'Сет ваучеров'}}</text>
+          <text class="card-price">{{item.total_price_rub}} ₽</text>
         </view>
 
-        <view style="margin-top: 12px; color: #ffffff; font-size: 20px; font-weight: bold;">
-          {{item.balanceRUB}} ₽ <text style="color: #777; font-size: 14px; font-weight: normal;">(≈ {{item.balanceCNY}} ¥)</text>
-        </view>
-
-        <view style="margin-top: 8px; color: #666; font-size: 12px;">
-          Карта: {{item.cardNumber}}
+        <!-- Кнопки действия -->
+        <view class="card-actions">
+          <button class="btn btn-secondary" bindtap="onAddToCart" data-type="set" data-id="{{item.id}}">
+            🛒 В корзину
+          </button>
+          <button class="btn btn-primary" bindtap="onBuyNow" data-type="set" data-id="{{item.id}}">
+            ⚡ Купить
+          </button>
         </view>
       </view>
     </block>
+  </view>
 
-    <!-- Если карт нет -->
-    <view wx:if="{{userCards.length === 0}}" style="color: #666; text-align: center; margin-top: 20px;">
-      У вас пока нет активных карт. Перейдите в «Витрину», чтобы приобрести ваучер.
-    </view>
+  <!-- СЕКЦИЯ ОТДЕЛЬНЫХ КАРТ -->
+  <view class="section-title">Отдельные карты</view>
+  <view class="card-list">
+    <block wx:for="{{voucherCards}}" wx:key="id">
+      <view class="card-item">
+        <view class="card-info">
+          <text class="card-title">{{item.store_name}}</text>
+          <text class="card-price">Баланс: {{item.balance_rub}} ₽</text>
+        </view>
+
+        <!-- Кнопки действия -->
+        <view class="card-actions">
+          <button class="btn btn-secondary" bindtap="onAddToCart" data-type="card" data-id="{{item.id}}">
+            🛒 В корзину
+          </button>
+          <button class="btn btn-primary" bindtap="onBuyNow" data-type="card" data-id="{{item.id}}">
+            ⚡ Купить
+          </button>
+        </view>
+      </view>
+    </block>
+  </view>
+
+  <!-- НИЖНЯЯ ПАНЕЛЬ С КНОПКАМИ "МОИ КАРТЫ" И "КОРЗИНА" -->
+  <view class="bottom-bar">
+    <button class="btn-my-cards" bindtap="goToMyCards">
+      <text>🎴 Мои карты</text>
+    </button>
+
+    <button class="btn-cart" bindtap="goToCart">
+      <text>🛒 Корзина</text>
+      <view class="cart-badge" wx:if="{{cartCount > 0}}">{{cartCount}}</view>
+    </button>
   </view>
 
 </view>

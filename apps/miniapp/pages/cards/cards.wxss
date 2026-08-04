@@ -1,0 +1,80 @@
+.container {
+  padding: 30rpx;
+  background-color: #f7f8fa;
+  min-height: 100vh;
+}
+
+.title {
+  font-size: 36rpx;
+  font-weight: bold;
+  color: #111;
+  margin-bottom: 20rpx;
+  display: block;
+}
+
+.empty-state {
+  text-align: center;
+  margin-top: 100rpx;
+  color: #888;
+  font-size: 28rpx;
+}
+
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.card-item {
+  background: #ffffff;
+  border-radius: 20rpx;
+  padding: 30rpx;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+  padding-bottom: 16rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.store-name {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #222;
+}
+
+.status-tag {
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  background-color: #e8f4ff;
+  color: #1890ff;
+}
+
+.balance-block, .code-block {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12rpx;
+}
+
+.label {
+  font-size: 26rpx;
+  color: #666;
+}
+
+.balance {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #ff4d4f;
+}
+
+.code {
+  font-size: 28rpx;
+  font-family: monospace;
+  font-weight: 600;
+  color: #333;
+}

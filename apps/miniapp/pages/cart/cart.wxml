@@ -1,0 +1,32 @@
+<!-- pages/cart/cart.wxml -->
+<view class="container" style="padding: 16px; background: #121212; min-height: 100vh; box-sizing: border-box;">
+  
+  <view style="font-size: 22px; font-weight: bold; color: #fff; margin-bottom: 20px;">🛒 Корзина</view>
+
+  <block wx:if="{{cartItems.length === 0}}">
+    <view style="text-align: center; color: #666; margin-top: 60px;">Корзина пуста</view>
+  </block>
+
+  <block wx:else>
+    <view wx:for="{{cartItems}}" wx:key="index" style="background: #1e1e1e; padding: 14px; border-radius: 10px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;">
+      <view>
+        <view style="color: #fff; font-weight: bold;">{{item.title}}</view>
+        <view style="color: #07c160; font-size: 14px; margin-top: 2px;">¥ {{item.price_cny}}</view>
+      </view>
+      <view bindtap="removeItem" data-index="{{index}}" style="color: #ff4d4f; font-size: 13px; padding: 4px 8px;">Удалить</view>
+    </view>
+
+    <!-- Итого и Кнопка Оплаты -->
+    <view style="margin-top: 30px; background: #1a1a1a; padding: 16px; border-radius: 12px; border: 1px solid #333;">
+      <view style="display: flex; justify-content: space-between; color: #fff; font-size: 16px; font-weight: bold; margin-bottom: 16px;">
+        <text>Итого к оплате:</text>
+        <text style="color: #07c160;">¥ {{totalPrice}}</text>
+      </view>
+
+      <button bindtap="checkout" style="background: #07c160; color: #fff; font-weight: bold; border-radius: 20px;">
+        Оплатить через WeChat Pay
+      </button>
+    </view>
+  </block>
+
+</view>

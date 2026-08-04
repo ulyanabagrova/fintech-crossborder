@@ -1,0 +1,29 @@
+<view class="container" style="padding: 20px; background: #121212; min-height: 100vh; box-sizing: border-box;">
+  
+  <view class="header" style="margin-bottom: 24px;">
+    <view style="font-size: 22px; font-weight: bold; color: #ffffff;">➕ Добавление ваучера</view>
+    <view style="font-size: 13px; color: #888888; margin-top: 4px;">Панель администратора (Supabase DB)</view>
+  </view>
+
+  <form bindsubmit="submitCard">
+    <view style="margin-bottom: 16px;">
+      <text style="color: #aaa; font-size: 13px;">Название карты / Бренд:</text>
+      <input name="title" placeholder="например: Перекрёсток 1000 ₽" style="background: #1e1e1e; color: #fff; padding: 12px; border-radius: 8px; margin-top: 6px; border: 1px solid #333;" />
+    </view>
+
+    <view style="margin-bottom: 16px;">
+      <text style="color: #aaa; font-size: 13px;">Сумма в рублях (₽):</text>
+      <input name="amountRUB" type="digit" placeholder="1000" style="background: #1e1e1e; color: #fff; padding: 12px; border-radius: 8px; margin-top: 6px; border: 1px solid #333;" />
+    </view>
+
+    <view style="margin-bottom: 16px;">
+      <text style="color: #aaa; font-size: 13px;">Цена в юанях (¥):</text>
+      <input name="priceCNY" type="digit" placeholder="120" style="background: #1e1e1e; color: #fff; padding: 12px; border-radius: 8px; margin-top: 6px; border: 1px solid #333;" />
+    </view>
+
+    <button form-type="submit" style="background: #07c160; color: #fff; font-weight: bold; margin-top: 24px; border-radius: 20px;">
+      Сохранить в Supabase
+    </button>
+  </form>
+
+</view>

@@ -1,0 +1,4 @@
+/* pages/admin/add-card/add-card.wxss */
+page {
+  background-color: #121212;
+}

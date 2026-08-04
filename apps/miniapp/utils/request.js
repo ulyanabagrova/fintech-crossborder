@@ -1,12 +1,26 @@
-// utils/request.js
-const BASE_URL = 'http://localhost:3000'; // Наш локальный NestJS бэкенд
+const BASE_URL = 'http://localhost:3000/api/v1';
 
-function request(url, method = 'GET', data = {}) {
+function request(urlOrOptions, method = 'GET', data = {}) {
+  let path = urlOrOptions;
+  let reqMethod = method;
+  let reqData = data;
+
+  if (typeof urlOrOptions === 'object' && urlOrOptions !== null) {
+    path = urlOrOptions.url;
+    reqMethod = urlOrOptions.method || 'GET';
+    reqData = urlOrOptions.data || {};
+  }
+
+  if (!path) path = '';
+  if (!path.startsWith('/')) path = '/' + path;
+
+  const fullUrl = `${BASE_URL}${path}`;
+
   return new Promise((resolve, reject) => {
     wx.request({
-      url: `${BASE_URL}${url}`,
-      method: method.toUpperCase(),
-      data,
+      url: fullUrl,
+      method: reqMethod.toUpperCase(),
+      data: reqData,
       header: {
         'content-type': 'application/json',
       },
@@ -14,8 +28,15 @@ function request(url, method = 'GET', data = {}) {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
         } else {
+          const errorMsg =
+            res.data && res.data.message
+              ? Array.isArray(res.data.message)
+                ? res.data.message.join(', ')
+                : res.data.message
+              : 'Ошибка сервера';
+
           wx.showToast({
-            title: (res.data && res.data.message) ? res.data.message : 'Ошибка сервера',
+            title: errorMsg,
             icon: 'none',
           });
           reject(res.data);
@@ -32,6 +53,5 @@ function request(url, method = 'GET', data = {}) {
   });
 }
 
-// Экспортируем функцию напрямую и в виде объекта, чтобы импорт работал при любом синтаксисе
 module.exports = request;
 module.exports.request = request;
