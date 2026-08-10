@@ -1,11 +1,13 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/v1/(.*)",
+      "destination": "/api/index"
+    },
+    {
       "source": "/(.*)",
-      "destination": "/dist/src/main.js"
+      "destination": "/api/index"
     }
   ]
 }
