@@ -5,7 +5,7 @@ import { CardsService } from './cards.service';
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
-  // POST /api/v1/cards/buy — покупка одиночной карты
+  // POST /api/v1/cards/buy
   @Post('buy')
   async buyCard(@Body() body: { userId: string; cardId: string; type: string }) {
     if (!body.userId || !body.cardId) {
@@ -14,7 +14,7 @@ export class CardsController {
     return this.cardsService.buyCard(body.userId, body.cardId, body.type);
   }
 
-  // GET /api/v1/cards/purchased?userId=... — получение всех купленных карт юзера
+  // GET /api/v1/cards/purchased?userId=...
   @Get('purchased')
   async getPurchasedCards(@Query('userId') userId: string) {
     if (!userId) {

@@ -1,6 +1,5 @@
-// apps/backend/src/modules/retail-gateway/retail-gateway.service.ts
 import { Injectable, BadRequestException, UnauthorizedException } from '@nestjs/common';
-import { VouchersService } from '../vouchers/vouchers.service';
+import { VouchersService, UserCardRecord } from '../vouchers/vouchers.service';
 import { VaultService } from '../security-vault/vault.service';
 
 export interface TransactionRecord {
@@ -40,37 +39,46 @@ export class RetailGatewayService {
       }
     }
 
-    // 2. Проверяем баланс карт пользователя и выбираем только карту нужного магазина
-    const userCards = await this.vouchersService.getUserCards(userId, merchantKey);
-    const eligibleCards = userCards.filter((card) => {
+    // 2. Получаем карты пользователя
+    const userCards = await this.vouchersService.getUserCards(userId);
+
+    // 3. Выбираем только активную карту для нужного магазина
+    const eligibleCards = userCards.filter((card: UserCardRecord) => {
+      const isStatusActive = card.status ? String(card.status).toUpperCase() === 'ACTIVE' : true;
+
       if (!merchantKey) {
-        return String(card.status).toUpperCase() === 'ACTIVE';
+        return isStatusActive;
       }
 
-      return String(card.status).toUpperCase() === 'ACTIVE' && this.matchesMerchant(card, merchantKey);
+      return isStatusActive && this.matchesMerchant(card, merchantKey);
     });
+
     const activeCard = eligibleCards[0];
 
     if (!activeCard) {
       throw new BadRequestException(`Нет активной карты для магазина ${merchantName}`);
     }
 
-    if (activeCard.balanceRUB < amountRUB) {
-      throw new BadRequestException(`Недостаточно средств. Чек: ${amountRUB} ₽, Баланс: ${activeCard.balanceRUB} ₽`);
+    const currentBalance = Number(activeCard.balance_rub || 0);
+
+    if (currentBalance < amountRUB) {
+      throw new BadRequestException(
+        `Недостаточно средств. Чек: ${amountRUB} ₽, Баланс: ${currentBalance} ₽`,
+      );
     }
 
-    // 3. Списываем средства
-    const updatedBalance = activeCard.balanceRUB - amountRUB;
-    activeCard.balanceRUB = updatedBalance;
+    // 4. Списываем средства
+    const updatedBalance = currentBalance - amountRUB;
+    activeCard.balance_rub = updatedBalance;
 
     await this.vouchersService.updateCardBalance(activeCard.id, updatedBalance);
 
-    // 4. Подписываем результат через Vault
+    // 5. Подписываем результат через Vault
     const txId = `sbp-tx-${Date.now()}`;
-    const payloadToSign = `${txId}:${amountRUB}:${activeCard.balanceRUB}:${merchantName}`;
+    const payloadToSign = `${txId}:${amountRUB}:${activeCard.balance_rub}:${merchantName}`;
     const vaultSignature = this.vaultService.generateHmacSignature(payloadToSign);
 
-    // 5. Сохраняем в историю
+    // 6. Сохраняем в историю
     const record: TransactionRecord = {
       id: txId,
       type: 'SBP_PAYMENT',
@@ -87,7 +95,7 @@ export class RetailGatewayService {
     return {
       success: true,
       transaction: record,
-      remainingBalanceRUB: activeCard.balanceRUB,
+      remainingBalanceRUB: activeCard.balance_rub,
     };
   }
 
@@ -109,15 +117,15 @@ export class RetailGatewayService {
     return { name: 'Тестовый мерчант СБП', key: '' };
   }
 
-  private matchesMerchant(card: { merchantId?: string }, merchantKey: string) {
-    if (!card.merchantId || !merchantKey) {
+  private matchesMerchant(card: UserCardRecord, merchantKey: string): boolean {
+    if (!card.store_name || !merchantKey) {
       return false;
     }
 
-    const normalizedCard = String(card.merchantId).toLowerCase();
+    const normalizedStore = String(card.store_name).toLowerCase();
     const normalizedKey = merchantKey.toLowerCase();
 
-    return normalizedCard.includes(normalizedKey) || normalizedKey.includes(normalizedCard);
+    return normalizedStore.includes(normalizedKey) || normalizedKey.includes(normalizedStore);
   }
 
   // Получить историю операций

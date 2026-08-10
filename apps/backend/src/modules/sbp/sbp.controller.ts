@@ -1,22 +1,13 @@
-import { Controller, Post, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { SbpService } from './sbp.service';
+import { PayByQrDto } from './dto/pay-by-qr.dto';
 
-@Controller('sbp')
+@Controller('sbp') // 👈 Путь 1: /sbp
 export class SbpController {
   constructor(private readonly sbpService: SbpService) {}
 
-  @Post('pay-qr')
-  async payByQr(
-    @Body() body: { userId: string; store: string; amount: number; allowStoreCard?: boolean },
-  ) {
-    if (!body.userId || !body.store || !body.amount) {
-      throw new BadRequestException('userId, store и amount обязательны');
-    }
-    return this.sbpService.payByQr(
-      body.userId,
-      body.store,
-      body.amount,
-      body.allowStoreCard || false,
-    );
+  @Post('pay-qr') // 👈 Путь 2: /pay-qr -> Итого /sbp/pay-qr
+  async payByQr(@Body() dto: PayByQrDto) {
+    return this.sbpService.payByQr(dto);
   }
 }

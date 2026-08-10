@@ -14,19 +14,16 @@ import { AddToCartDto } from './dto/add-to-cart.dto';
 export class CartController {
   constructor(private readonly cartService: CartService) {}
 
-  // 1. Получить корзину пользователя
   @Get(':userId')
   async getUserCart(@Param('userId') userId: string) {
     return this.cartService.getUserCart(userId);
   }
 
-  // 2. Добавить товар в корзину
   @Post('add')
   async addToCart(@Body() dto: AddToCartDto) {
     return this.cartService.addToCart(dto);
   }
 
-  // 3. Оформление покупки (перенос карт из корзины в user_cards и очистка корзины)
   @Post('checkout')
   async checkout(@Body() body: { userId: string }) {
     if (!body?.userId) {
@@ -35,18 +32,17 @@ export class CartController {
     return this.cartService.checkout(body.userId);
   }
 
-  // 4. Удалить один элемент из корзины по ID
+  // Статичный маршрут с явным префиксом 'clear' должен стоять выше параметризованного ':cartItemId/:userId'
+  @Delete('clear/:userId')
+  async clearCart(@Param('userId') userId: string) {
+    return this.cartService.clearCart(userId);
+  }
+
   @Delete(':cartItemId/:userId')
   async removeFromCart(
     @Param('cartItemId') cartItemId: string,
     @Param('userId') userId: string,
   ) {
     return this.cartService.removeFromCart(cartItemId, userId);
-  }
-
-  // 5. Очистить всю корзину пользователя
-  @Delete('clear/:userId')
-  async clearCart(@Param('userId') userId: string) {
-    return this.cartService.clearCart(userId);
   }
 }
