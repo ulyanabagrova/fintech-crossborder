@@ -1,5 +1,5 @@
-// Правильно (http без s):
-export const BASE_URL = 'http://localhost:3000/api/v1';
+// Правильно для Vercel (обязательно с HTTPS):
+export const BASE_URL = 'https://fintech-crossborder-backend-7go87yjj2-ulyanabagrovas-projects.vercel.app/api/v1';
 
 /**
  * Универсальный HTTP-клиент для WeChat Mini Program
@@ -27,14 +27,18 @@ function request(urlOrOptions, method = 'GET', data = {}) {
     fullUrl = `${BASE_URL}${path}`;
   }
 
-  // Получаем токен или авторизацию (если используется)
-  const token = wx.getStorageSync('token');
+  // Формируем базовые заголовки
   const headers = {
     'content-type': 'application/json',
     ...customHeaders,
   };
 
-  if (token) {
+  // Не подставляем Authorization токен на ручки логина/регистрации,
+  // чтобы протухший токен из storage не ломал публичные запросы (401 Unauthorized)
+  const isAuthEndpoint = fullUrl.includes('/auth/');
+  const token = wx.getStorageSync('token');
+
+  if (token && !isAuthEndpoint) {
     headers['Authorization'] = `Bearer ${token}`;
   }
 
@@ -46,13 +50,11 @@ function request(urlOrOptions, method = 'GET', data = {}) {
       header: headers,
       timeout: 15000,
       success: (res) => {
-        // HTTP 200 - 299: Успех
         if (res.statusCode >= 200 && res.statusCode < 300) {
           resolve(res.data);
           return;
         }
 
-        // Вытаскиваем сообщение об ошибке от NestJS (строка или массив из DTO)
         let message = 'Ошибка сервера';
         if (res.data && res.data.message) {
           message = Array.isArray(res.data.message)
@@ -60,12 +62,11 @@ function request(urlOrOptions, method = 'GET', data = {}) {
             : res.data.message;
         }
 
-        // Формируем стандартизированный объект ошибки
         const error = new Error(message);
         error.statusCode = res.statusCode;
         error.data = {
           ...(typeof res.data === 'object' ? res.data : {}),
-          message: message, // Гарантируем, что message — это всегда нормальная строка
+          message: message,
         };
 
         reject(error);
@@ -81,7 +82,6 @@ function request(urlOrOptions, method = 'GET', data = {}) {
   });
 }
 
-// Поддержка CommonJS (require) и ES Modules (import)
 module.exports = request;
 module.exports.request = request;
 module.exports.default = request;

@@ -4,24 +4,41 @@ async function login() {
   return new Promise((resolve, reject) => {
     wx.login({
       success: async (res) => {
-        if (res.code) {
-          try {
-            const result = await request('/auth/wechat-login', 'POST', { code: res.code });
-            if (result && result.success && result.user) {
-              wx.setStorageSync('user', result.user);
-              wx.setStorageSync('userId', result.user.id);
-              resolve(result.user);
-            } else {
-              reject(new Error('Ошибка авторизации: пустой ответ от сервера'));
+        if (!res.code) {
+          return reject(new Error('Не удалось получить code от WeChat'));
+        }
+
+        try {
+          // Отправляем запрос на авторизацию
+          const result = await request('/auth/wechat-login', 'POST', { code: res.code });
+
+          // Гибкое извлечение токена и данных пользователя
+          const token = result.token || result.accessToken || result.data?.token || result.access_token;
+          const user = result.user || result.data?.user || result;
+
+          if (token || user) {
+            if (token) {
+              wx.setStorageSync('token', token);
             }
-          } catch (err) {
-            reject(err);
+            if (user && typeof user === 'object') {
+              wx.setStorageSync('user', user);
+              if (user.id || user._id) {
+                wx.setStorageSync('userId', user.id || user._id);
+              }
+            }
+            resolve(user);
+          } else {
+            reject(new Error('Ошибка авторизации: пустой ответ от сервера'));
           }
-        } else {
-          reject(new Error('Не удалось получить code от WeChat'));
+        } catch (err) {
+          console.error('[Auth Service Error]', err);
+          reject(err);
         }
       },
-      fail: (err) => reject(err)
+      fail: (err) => {
+        console.error('[wx.login Fail]', err);
+        reject(err);
+      }
     });
   });
 }
@@ -30,7 +47,14 @@ function getCurrentUser() {
   return wx.getStorageSync('user') || null;
 }
 
+function logout() {
+  wx.removeStorageSync('token');
+  wx.removeStorageSync('user');
+  wx.removeStorageSync('userId');
+}
+
 module.exports = {
   login,
-  getCurrentUser
+  getCurrentUser,
+  logout
 };

@@ -15,10 +15,17 @@ export const createServer = async (expressInstance: any) => {
   app.setGlobalPrefix('api/v1');
 
   app.enableCors({
-    origin: '*',
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
-    credentials: true,
-  });
+  origin: true, // Разрешает запросы с любого источника (включая wxfile:// и devtools)
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+  credentials: true,
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'X-Requested-With',
+    'Accept',
+    'x-wx-source', // Заголовки WeChat Mini Program
+  ],
+});
 
   app.useGlobalPipes(
     new ValidationPipe({
