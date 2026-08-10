@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "buildCommand": "cd apps/backend && npm install && npm run build",
+  "outputDirectory": "apps/backend/dist",
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/apps/backend/dist/main.js"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/apps/backend/dist/main.js"
+    }
+  ]
+}
