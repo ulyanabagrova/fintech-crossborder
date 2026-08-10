@@ -1,26 +1,43 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from '../src/app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { ExpressAdapter } from '@nestjs/platform-express';
+import { AppModule } from '../src/app.module';
 import express from 'express';
 
 const server = express();
 
-const createNestServer = async (expressInstance: any) => {
+export const createServer = async (expressInstance: any) => {
   const app = await NestFactory.create(
     AppModule,
     new ExpressAdapter(expressInstance),
   );
 
-  app.enableCors({ origin: true, credentials: true });
   app.setGlobalPrefix('api/v1');
+
+  app.enableCors({
+    origin: '*',
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    credentials: true,
+  });
+
   app.useGlobalPipes(
-    new ValidationPipe({ whitelist: true, transform: true }),
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
   );
 
   await app.init();
 };
 
-createNestServer(server);
+let isServerInitialized = false;
 
-export default server;
+export default async function handler(req: any, res: any) {
+  if (!isServerInitialized) {
+    await createServer(server);
+    isServerInitialized = true;
+  }
+  server(req, res);
+}

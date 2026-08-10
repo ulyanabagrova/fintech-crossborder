@@ -13,7 +13,11 @@
     "start:backend": "cd apps/backend && pnpm start:dev",
     "lint": "eslint \"{apps,packages}/**/*.ts\""
   },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "typescript": "^5.7.3"
   }
 }
