@@ -17,8 +17,7 @@ const createNestServer = async (expressInstance: any) => {
     credentials: true,
   });
 
-  // ВАЖНО: Убираем app.setGlobalPrefix('api/v1'), 
-  // так как Vercel прокидывает /api/v1 уже внутри req.url
+  app.setGlobalPrefix('api/v1');
 
   app.useGlobalPipes(
     new ValidationPipe({
@@ -33,6 +32,19 @@ const createNestServer = async (expressInstance: any) => {
 let isInitialized = false;
 
 export default async function handler(req: any, res: any) {
+  console.log(`[Vercel Raw Incoming Request]: ${req.method} ${req.url}`);
+
+  // Если Vercel срезает /api/v1, восстанавливаем полный путь для NestJS
+  if (req.url && !req.url.startsWith('/api/v1')) {
+    const originalUrl = req.url;
+    if (req.url.startsWith('/v1')) {
+      req.url = `/api${req.url}`;
+    } else {
+      req.url = `/api/v1${req.url.startsWith('/') ? '' : '/'}${req.url}`;
+    }
+    console.log(`[URL Rewritten]: ${originalUrl} -> ${req.url}`);
+  }
+
   if (!isInitialized) {
     await createNestServer(server);
     isInitialized = true;
