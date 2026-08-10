@@ -17,7 +17,8 @@ const createNestServer = async (expressInstance: any) => {
     credentials: true,
   });
 
-  app.setGlobalPrefix('api/v1');
+  // ВАЖНО: Убираем app.setGlobalPrefix('api/v1'), 
+  // так как Vercel прокидывает /api/v1 уже внутри req.url
 
   app.useGlobalPipes(
     new ValidationPipe({
