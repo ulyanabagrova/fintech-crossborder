@@ -14,7 +14,8 @@ export default async function handler(req: any, res: any) {
       credentials: true,
     });
 
-    app.setGlobalPrefix('api/v1');
+    // ⚠️ УБРАНО: app.setGlobalPrefix('api/v1');
+    // На Vercel маршрутизация решает префикс, либо он обрабатывается на уровне rewrites.
 
     app.useGlobalPipes(
       new ValidationPipe({
