@@ -13,7 +13,6 @@ export default async function handler(req: any, res: any) {
       credentials: true,
     });
 
-    // Возвращаем префикс
     app.setGlobalPrefix('api/v1');
 
     app.useGlobalPipes(
@@ -24,11 +23,6 @@ export default async function handler(req: any, res: any) {
     );
 
     await app.init();
-  }
-
-  // Для Serverless на Vercel фиксируем req.url, если rewrite передает его со сдвигом
-  if (req.url && !req.url.startsWith('/api/v1')) {
-    req.url = `/api/v1${req.url.startsWith('/') ? '' : '/'}${req.url}`;
   }
 
   const instance = app.getHttpAdapter().getInstance();
