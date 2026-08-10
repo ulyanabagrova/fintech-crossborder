@@ -1,21 +1,23 @@
 .container {
   padding: 30rpx;
-  background-color: #f7f8fa;
-  min-height: 100vh;
+  padding-bottom: 180rpx;
+  box-sizing: border-box;
+}
+
+.header {
+  margin-bottom: 30rpx;
 }
 
 .title {
-  font-size: 36rpx;
+  font-size: 40rpx;
   font-weight: bold;
-  color: #111;
-  margin-bottom: 20rpx;
-  display: block;
+  color: #1a1a1a;
 }
 
 .empty-state {
   text-align: center;
-  margin-top: 100rpx;
-  color: #888;
+  padding: 100rpx 0;
+  color: #8e8e93;
   font-size: 28rpx;
 }
 
@@ -29,52 +31,119 @@
   background: #ffffff;
   border-radius: 20rpx;
   padding: 30rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  border: 1rpx solid #e5e5ea;
+}
+
+/* Выделение для сета */
+.card-item.set-item {
+  border-left: 8rpx solid #007aff;
+  background: #fafcff;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20rpx;
+  margin-bottom: 24rpx;
   padding-bottom: 16rpx;
-  border-bottom: 1rpx solid #f0f0f0;
+  border-bottom: 1rpx solid #f2f2f7;
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.type-badge {
+  font-size: 20rpx;
+  padding: 4rpx 12rpx;
+  border-radius: 8rpx;
+  font-weight: 600;
+  background: #f2f2f7;
+  color: #555;
+}
+
+.type-badge.set {
+  background: #e5f0ff;
+  color: #007aff;
 }
 
 .store-name {
   font-size: 32rpx;
   font-weight: 600;
-  color: #222;
+  color: #000;
 }
 
 .status-tag {
   font-size: 22rpx;
   padding: 6rpx 16rpx;
   border-radius: 20rpx;
-  background-color: #e8f4ff;
-  color: #1890ff;
+  background: #e5f9e7;
+  color: #34c759;
+  font-weight: 500;
 }
 
-.balance-block, .code-block {
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.info-row {
   display: flex;
   justify-content: space-between;
-  margin-top: 12rpx;
+  align-items: center;
 }
 
 .label {
   font-size: 26rpx;
-  color: #666;
+  color: #8e8e93;
 }
 
-.balance {
-  font-size: 32rpx;
-  font-weight: bold;
-  color: #ff4d4f;
-}
-
-.code {
+.value {
   font-size: 28rpx;
-  font-family: monospace;
   font-weight: 600;
-  color: #333;
+}
+
+.value.balance {
+  font-size: 32rpx;
+  color: #34c759;
+}
+
+.value.price {
+  color: #1a1a1a;
+}
+
+.value.code {
+  color: #007aff;
+  letter-spacing: 2rpx;
+}
+
+/* Фиксированная кнопка СБП */
+.bottom-qr-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  padding: 20rpx 30rpx;
+  padding-bottom: calc(20rpx + env(safe-area-inset-bottom));
+  box-shadow: 0 -4rpx 20rpx rgba(0, 0, 0, 0.08);
+  z-index: 100;
+}
+
+.qr-pay-btn {
+  background: #007aff;
+  color: #ffffff;
+  font-size: 32rpx;
+  font-weight: 600;
+  border-radius: 50rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
 }

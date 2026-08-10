@@ -22,4 +22,5 @@
     "types": ["node"]
   },
   "exclude": ["node_modules", "dist", "apps/backend/src/**/*.spec.ts", "apps/backend/test/**/*.ts", "apps/miniapp/**"]
+  
 }

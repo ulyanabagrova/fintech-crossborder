@@ -1,150 +1,201 @@
-const request = require('../../utils/request.js');
-const { login } = require('../../utils/auth.js');
+import { request } from '../../utils/request';
 
 Page({
   data: {
-    voucherSets: [],
     voucherCards: [],
-    cartCount: 0
+    voucherSets: [],
+    loading: true
   },
 
-  onShow() {
+  onLoad() {
+    this.ensureUserId();
     this.loadData();
-    this.ensureUserAndFetchCart();
   },
 
-  // Загрузка списков сетов и карт
-  async loadData() {
-    try {
-      const sets = await request('/vouchers/sets', 'GET');
-      this.setData({ voucherSets: sets || [] });
-    } catch (err) {
-      console.error('Ошибка загрузки сетов:', err);
-    }
-
-    try {
-      const cards = await request('/vouchers/cards', 'GET');
-      this.setData({ voucherCards: cards || [] });
-    } catch (err) {
-      console.error('Ошибка загрузки карт:', err);
-    }
-  },
-
-  // Проверка сессии и получение счетчика корзины
-  async ensureUserAndFetchCart() {
+  // Гарантируем наличие userId для работы корзины
+  ensureUserId() {
     let userId = wx.getStorageSync('userId');
     if (!userId) {
-      try {
-        const user = await login();
-        userId = user.id;
-      } catch (e) {
-        console.error('Не удалось автоматически авторизовать пользователя:', e);
-        return;
-      }
+      userId = 'user_' + Math.random().toString(36).substr(2, 9);
+      wx.setStorageSync('userId', userId);
     }
-    this.fetchCartCount(userId);
+    return userId;
   },
 
-  // Получение количества товаров в корзине
-  async fetchCartCount(userId) {
-    const id = userId || wx.getStorageSync('userId');
-    if (!id) return;
-
-    try {
-      const res = await request(`/cart/${id}`, 'GET');
-      const count = Array.isArray(res)
-        ? res.reduce((acc, item) => acc + (item.quantity || 1), 0)
-        : 0;
-      this.setData({ cartCount: count });
-    } catch (err) {
-      console.error('Ошибка получения количества в корзине:', err);
-    }
-  },
-
-  // Добавление товара в корзину
-  async onAddToCart(e) {
-    const { type, id } = e.currentTarget.dataset;
-    let userId = wx.getStorageSync('userId');
-
-    if (!userId) {
-      wx.showLoading({ title: 'Авторизация...' });
-      try {
-        const user = await login();
-        userId = user.id;
-      } catch (err) {
-        wx.hideLoading();
-        wx.showToast({ title: 'Авторизуйтесь для покупки', icon: 'none' });
-        return;
-      }
-    }
-
-    wx.showLoading({ title: 'Добавление...' });
-
-    try {
-      await request('/cart/add', 'POST', {
-        userId: userId,
-        itemType: type,
-        itemId: id,
-        quantity: 1
-      });
-
-      wx.showToast({ title: 'Добавлено!', icon: 'success' });
-      this.fetchCartCount(userId);
-    } catch (err) {
-      console.error('Ошибка добавления:', err);
-      wx.showToast({ title: 'Ошибка добавления', icon: 'none' });
-    } finally {
-      wx.hideLoading();
-    }
-  },
-
-  // Покупка в 1 клик (добавление + сразу переход в корзину)
-  async onBuyNow(e) {
-    const { type, id } = e.currentTarget.dataset;
-    let userId = wx.getStorageSync('userId');
-
-    if (!userId) {
-      wx.showLoading({ title: 'Авторизация...' });
-      try {
-        const user = await login();
-        userId = user.id;
-      } catch (err) {
-        wx.hideLoading();
-        wx.showToast({ title: 'Авторизуйтесь для покупки', icon: 'none' });
-        return;
-      }
-    }
-
-    wx.showLoading({ title: 'Оформление...' });
-
-    try {
-      await request('/cart/add', 'POST', {
-        userId: userId,
-        itemType: type,
-        itemId: id,
-        quantity: 1
-      });
-
-      this.goToCart();
-    } catch (err) {
-      console.error('Ошибка быстрой покупки:', err);
-      wx.showToast({ title: 'Не удалось добавить товар', icon: 'none' });
-    } finally {
-      wx.hideLoading();
-    }
-  },
-
-  // Переход в корзину
-  goToCart() {
-    wx.navigateTo({
-      url: '/pages/cart/cart'
+  onPullDownRefresh() {
+    this.loadData().then(() => {
+      wx.stopPullDownRefresh();
     });
   },
 
-  // Переход в "Мои карты"
+  async loadData() {
+    wx.showLoading({ title: 'Загрузка...' });
+    this.setData({ loading: true });
+
+    try {
+      const [cardsRes, setsRes] = await Promise.all([
+        request('/vouchers/cards').catch(err => {
+          console.error('Ошибка загрузки карт:', err);
+          return null;
+        }),
+        request('/vouchers/sets').catch(err => {
+          console.error('Ошибка загрузки сетов:', err);
+          return null;
+        })
+      ]);
+
+      const extractArray = (res) => {
+        if (!res) return [];
+        if (Array.isArray(res)) return res;
+        if (Array.isArray(res.data)) return res.data;
+        if (Array.isArray(res.result)) return res.result;
+        if (Array.isArray(res.items)) return res.items;
+        if (res.data && Array.isArray(res.data.data)) return res.data.data;
+        if (res.data && Array.isArray(res.data.items)) return res.data.items;
+        if (res.data && Array.isArray(res.data.result)) return res.data.result;
+        return [];
+      };
+
+      const rawCards = extractArray(cardsRes);
+      const rawSets = extractArray(setsRes);
+
+      // Вспомогательная функция безопасного парсинга чисел
+      const parseNum = (...valCandidates) => {
+        for (const val of valCandidates) {
+          if (val !== undefined && val !== null && val !== '') {
+            const num = Number(val);
+            if (!isNaN(num)) return num;
+          }
+        }
+        return 0;
+      };
+
+      const voucherCards = rawCards.map((item, index) => {
+        const balance = parseNum(
+          item.balance_rub,
+          item.balanceRub,
+          item.balance,
+          item.nominal,
+          item.nominal_rub
+        );
+
+        const price = parseNum(
+          item.cost_price_rub,
+          item.costPriceRub,
+          item.price_rub,
+          item.priceRub,
+          item.price,
+          item.cost,
+          balance
+        );
+
+        return {
+          ...item,
+          id: item.id || item._id || item.cardId || `card_${index}`,
+          title: item.store_name || item.storeName || item.title || item.name || 'Подарочная карта',
+          balanceFormatted: balance,
+          priceFormatted: price
+        };
+      });
+
+      const voucherSets = rawSets.map((item, index) => {
+        const balance = parseNum(
+          item.total_balance_rub,
+          item.totalBalanceRub,
+          item.total_nominal_rub,
+          item.total_balance,
+          item.balance
+        );
+
+        const price = parseNum(
+          item.price_rub,
+          item.priceRub,
+          item.price,
+          item.cost,
+          balance
+        );
+
+        return {
+          ...item,
+          id: item.id || item._id || item.setId || `set_${index}`,
+          title: item.title || item.name || 'Сет ваучеров',
+          balanceFormatted: balance,
+          priceFormatted: price
+        };
+      });
+
+      this.setData({
+        voucherCards,
+        voucherSets,
+        loading: false
+      });
+    } catch (err) {
+      console.error('Критическая ошибка при загрузке данных:', err);
+      wx.showToast({ title: 'Ошибка загрузки', icon: 'none' });
+      this.setData({ loading: false });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  // Отправка карты/сета на бэкенд в корзину
+  async onAddToCart(e) {
+    const { id, type } = e.currentTarget.dataset;
+    const userId = this.ensureUserId();
+
+    if (!id || !type) {
+      wx.showToast({ title: 'Ошибка параметров товара', icon: 'none' });
+      return;
+    }
+
+    try {
+      wx.showLoading({ title: 'Добавление...', mask: true });
+
+      await request('/cart/add', 'POST', {
+        userId,
+        itemType: type, // 'card' или 'set'
+        itemId: id,
+        quantity: 1
+      });
+
+      wx.showToast({
+        title: 'Добавлено в корзину',
+        icon: 'success'
+      });
+    } catch (err) {
+      console.error('Ошибка добавления в корзину:', err);
+      wx.showToast({
+        title: err?.data?.message || err?.message || 'Не удалось добавить',
+        icon: 'none'
+      });
+    } finally {
+      wx.hideLoading();
+    }
+  },
+
+  // Быстрая покупка: добавление + моментальный переход в корзину
+  async onBuyNow(e) {
+    await this.onAddToCart(e);
+    this.goToCart();
+  },
+
+  // Навигация в Корзину
+  goToCart() {
+    wx.navigateTo({
+      url: '/pages/cart/cart',
+      fail: () => {
+        wx.switchTab({ url: '/pages/cart/cart' });
+      }
+    });
+  },
+
+  // Навигация в "Мои карты"
   goToMyCards() {
     wx.navigateTo({
-      url: '/pages/cards/cards'
+      url: '/pages/cards/cards',
+      fail: () => {
+        wx.switchTab({ url: '/pages/cards/cards' });
+      }
     });
   }
 });

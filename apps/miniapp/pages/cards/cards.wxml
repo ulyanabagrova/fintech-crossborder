@@ -1,42 +1,54 @@
 <view class="container">
   <view class="header">
-    <text class="title">Мои купленные карты</text>
+    <text class="title">Мои ваучеры</text>
   </view>
 
+  <!-- Состояние "Пусто" -->
   <view wx:if="{{userCards.length === 0 && !loading}}" class="empty-state">
-    <text>У вас пока нет купленных карт</text>
+    <text>У вас пока нет купленных карт или сетов</text>
   </view>
 
-  <view class="cards-list">
+  <!-- Список карточек -->
+  <view class="cards-list" wx:if="{{userCards.length > 0}}">
     <block wx:for="{{userCards}}" wx:key="id">
-      <view class="card-item">
+      <view class="card-item {{item.type === 'set' ? 'set-item' : ''}}">
         <view class="card-header">
-          <text class="store-name">{{item.store_name || 'Ваучер'}}</text>
-          <text class="status-tag status-{{item.status}}">{{item.status || 'Активна'}}</text>
+          <view class="title-group">
+            <text class="type-badge {{item.type}}">
+              {{item.type === 'set' ? 'Сет ваучеров' : 'Карта'}}
+            </text>
+            <text class="store-name">{{item.title}}</text>
+          </view>
+          <text class="status-tag status-{{item.status}}">{{item.status || 'ACTIVE'}}</text>
         </view>
         
         <view class="card-body">
-          <view class="balance-block">
-            <text class="label">Баланс:</text>
-            <text class="balance">{{item.balance_rub}} ₽</text>
+          <!-- Отображение баланса -->
+          <view class="info-row">
+            <text class="label">Текущий баланс:</text>
+            <text class="value balance">{{item.balance_rub}} ₽</text>
           </view>
           
-          <view class="code-block" wx:if="{{item.code}}">
+          <!-- Отображение цены -->
+          <view class="info-row" wx:if="{{item.price_rub !== undefined}}">
+            <text class="label">Стоимость:</text>
+            <text class="value price">{{item.price_rub}} ₽</text>
+          </view>
+
+          <!-- Код активации, если есть -->
+          <view class="info-row" wx:if="{{item.code}}">
             <text class="label">Код активации:</text>
-            <text class="code">{{item.code}}</text>
+            <text class="value code">{{item.code}}</text>
           </view>
         </view>
+      </view>
+    </block>
+  </view>
 
   <!-- Фиксированная кнопка внизу -->
-
-      </view>
-
-    </block>
-      <view class="bottom-qr-bar">
+  <view class="bottom-qr-bar">
     <button class="qr-pay-btn" bindtap="goToQrPay">
       📷 Оплатить по QR-коду
     </button>
-  </view>
-
   </view>
 </view>

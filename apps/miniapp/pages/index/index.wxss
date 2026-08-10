@@ -1,151 +1,144 @@
-/* Отступ снизу для всей страницы, чтобы контент не перекрывался кнопкой корзины */
-.page-container {
-  padding-bottom: 100rpx;
+.container {
+  padding: 16px;
+  background-color: #010101;
+  min-height: 100vh;
+  box-sizing: border-box;
 }
 
 .section-title {
-  font-size: 36rpx;
+  font-size: 18px;
   font-weight: bold;
-  margin: 30rpx 20rpx 15rpx 20rpx;
-  color: #111;
-}
-
-.card-list {
-  padding: 0 20rpx;
+  color: #ffffff;
+  margin-bottom: 12px;
+  margin-top: 16px;
 }
 
 .card-item {
-  background: #ffffff;
-  border-radius: 16rpx;
-  padding: 24rpx;
-  margin-bottom: 20rpx;
-  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+  background: #1e1e1e;
+  border: 1px solid #2a2a2a;
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 12px;
   display: flex;
   flex-direction: column;
-  gap: 16rpx;
+  gap: 12px;
+}
+
+/* Верхняя строка: Название слева, Баланс справа */
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .card-title {
-  font-size: 30rpx;
-  font-weight: 600;
-  color: #222;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  flex: 1;
 }
 
-.card-price {
-  font-size: 28rpx;
-  color: #007aff;
-  font-weight: bold;
-  margin-top: 6rpx;
+.card-balance {
+  font-size: 13px;
+  color: #07c160;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Нижняя строка: Кнопки слева, Цена справа */
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
 }
 
 .card-actions {
   display: flex;
-  gap: 16rpx;
+  gap: 8px;
+  align-items: center;
 }
 
-.btn {
-  flex: 1;
-  font-size: 26rpx;
-  border-radius: 12rpx;
-  padding: 12rpx 0;
-  line-height: 1.4;
+/* Безопасные кнопки на базе view */
+.btn-action {
+  font-size: 12px;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+  text-align: center;
+  white-space: nowrap;
+  box-sizing: border-box;
 }
 
-.btn-secondary {
-  background-color: #f2f3f5;
-  color: #1d2129;
+.btn-add {
+  background: #2a2a2a;
+  color: #ffffff;
+  border: 1px solid #444444;
 }
 
-.btn-primary {
-  background-color: #007aff;
+.btn-buy {
+  background: #07c160;
   color: #ffffff;
 }
 
-/* ФИКСИРОВАННАЯ ПАНЕЛЬ КОРЗИНЫ ВНИЗУ */
-.fixed-cart-bar {
-  position: fixed;
-  bottom: 30rpx;
-  left: 30rpx;
-  right: 30rpx;
-  height: 100rpx;
-  background-color: #1c1c1e;
-  border-radius: 50rpx;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 36rpx;
-  box-shadow: 0 10rpx 30rpx rgba(0, 0, 0, 0.25);
-  z-index: 999;
+.btn-hover {
+  opacity: 0.8;
 }
 
-.cart-bar-content {
-  display: flex;
-  align-items: center;
-  gap: 20rpx;
+/* Правый блок цены */
+.card-price-container {
+  text-align: right;
+  white-space: nowrap;
+  margin-left: auto; /* Жестко прижимает блок к правому краю */
 }
 
-.cart-icon-wrapper {
-  position: relative;
-  font-size: 40rpx;
+.card-price-label {
+  font-size: 10px;
+  color: #888888;
+  display: block;
+  text-transform: uppercase;
 }
 
-.cart-badge {
-  position: absolute;
-  top: -8rpx;
-  right: -16rpx;
-  background-color: #ff3b30;
-  color: #fff;
-  font-size: 20rpx;
+.card-price {
+  font-size: 16px;
   font-weight: bold;
-  min-width: 32rpx;
-  height: 32rpx;
-  border-radius: 16rpx;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 6rpx;
-}
-
-.cart-bar-text {
   color: #ffffff;
-  font-size: 30rpx;
-  font-weight: 600;
 }
 
-.cart-arrow {
-  color: #8e8e93;
-  font-size: 44rpx;
+.bottom-spacer {
+  height: 80px;
 }
-.bottom-bar {
+
+.bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   display: flex;
-  gap: 12rpx;
-  padding: 20rpx 30rpx;
-  background: #ffffff;
-  box-shadow: 0 -4rpx 12rpx rgba(0, 0, 0, 0.05);
+  padding: 12px 16px;
+  background: #1a1a1a;
+  border-top: 1px solid #333;
+  gap: 12px;
   z-index: 100;
+  box-sizing: border-box;
 }
 
-.btn-my-cards, .btn-cart {
+.nav-btn {
   flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 88rpx;
-  border-radius: 44rpx;
-  font-size: 28rpx;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 20px;
+  padding: 10px 0;
+  text-align: center;
 }
 
-.btn-my-cards {
-  background-color: #f0f2f5;
-  color: #1a1a1a;
+.nav-btn-cards {
+  background: #2a2a2a;
+  color: #fff;
 }
 
-.btn-cart {
-  background-color: #07c160;
-  color: #ffffff;
+.nav-btn-cart {
+  background: #07c160;
+  color: #fff;
 }

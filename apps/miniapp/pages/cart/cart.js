@@ -1,120 +1,238 @@
-const request = require('../../utils/request.js');
+import { request } from '../../utils/request';
 
 Page({
   data: {
     cartItems: [],
-    totalPrice: 0,
-    loading: false
+    totalPrice: '0.00',
+    totalBalance: '0.00',
+    loading: true,
+    submitting: false
   },
 
   onShow() {
     this.loadCart();
   },
 
-  async loadCart() {
-    const userId = wx.getStorageSync('userId');
+  onPullDownRefresh() {
+    this.loadCart().then(() => {
+      wx.stopPullDownRefresh();
+    });
+  },
 
+  // Получение или инициализация userId
+  getUserId() {
+    let userId = wx.getStorageSync('userId');
     if (!userId) {
-      console.warn('User ID отсутствует в хранилище');
-      this.setData({ cartItems: [], totalPrice: '0.00' });
+      userId = 'user_' + Math.random().toString(36).substr(2, 9);
+      wx.setStorageSync('userId', userId);
+    }
+    return userId;
+  },
+
+  // Загрузка содержимого корзины
+  async loadCart() {
+    const userId = this.getUserId();
+    this.setData({ loading: true });
+
+    try {
+      const res = await request(`/cart/${userId}`, 'GET');
+
+      let rawItems = [];
+      if (Array.isArray(res)) {
+        rawItems = res;
+      } else if (res && Array.isArray(res.data)) {
+        rawItems = res.data;
+      } else if (res && Array.isArray(res.items)) {
+        rawItems = res.items;
+      }
+
+      const parseNum = (...candidates) => {
+        for (const val of candidates) {
+          if (val !== undefined && val !== null && val !== '') {
+            const num = Number(val);
+            if (!isNaN(num)) return num;
+          }
+        }
+        return 0;
+      };
+
+      let sumPrice = 0;
+      let sumBalance = 0;
+
+      const cartItems = rawItems.map((item, index) => {
+        const target = item.card || item.set || item.item || item;
+
+        const quantity = parseNum(item.quantity, 1);
+
+        const price = parseNum(
+          item.price_rub,
+          item.priceRub,
+          target.cost_price_rub,
+          target.costPriceRub,
+          target.price_rub,
+          target.priceRub,
+          target.price,
+          target.cost
+        );
+
+        const balance = parseNum(
+          target.balance_rub,
+          target.balanceRub,
+          target.total_balance_rub,
+          target.totalBalanceRub,
+          target.balance,
+          target.nominal
+        );
+
+        sumPrice += price * quantity;
+        sumBalance += balance * quantity;
+
+        return {
+          ...item,
+          id: item.id || item._id || `cart_item_${index}`,
+          itemId: item.itemId || item.item_id || target.id,
+          itemType: item.itemType || item.item_type || (item.set ? 'set' : 'card'),
+          title: target.title || target.store_name || target.storeName || target.name || 'Товар',
+          quantity,
+          priceFormatted: price,
+          balanceFormatted: balance
+        };
+      });
+
+      this.setData({
+        cartItems,
+        totalPrice: sumPrice.toFixed(2),
+        totalBalance: sumBalance.toFixed(2),
+        loading: false
+      });
+    } catch (err) {
+      console.error('Ошибка загрузки корзины:', err);
+      this.setData({
+        cartItems: [],
+        totalPrice: '0.00',
+        totalBalance: '0.00',
+        loading: false
+      });
+    }
+  },
+
+  // Изменение количества товара
+  async onQuantityChange(e) {
+    const { id, delta } = e.currentTarget.dataset;
+    const item = this.data.cartItems.find(i => i.id === id);
+    if (!item) return;
+
+    const newQty = item.quantity + Number(delta);
+    if (newQty <= 0) {
+      this.onRemoveItem(e);
       return;
     }
 
-    this.setData({ loading: true });
-    wx.showLoading({ title: 'Загрузка...' });
+    const userId = this.getUserId();
 
     try {
-      // Запрашиваем корзину из Supabase через NestJS
-      const res = await request(`/cart/${userId}`, 'GET');
-      
-      // Массив приходит от CartService: [{ id, itemType, quantity, details: {...} }]
-      const items = res || [];
-
-      // Подсчитываем общую стоимость
-      const total = items.reduce((sum, item) => {
-        if (!item.details) return sum;
-        // Берём цену карточки (balance_rub) или сета (total_price_rub)
-        const price = item.itemType === 'card' 
-          ? Number(item.details.balance_rub || 0) 
-          : Number(item.details.total_price_rub || 0);
-        
-        return sum + (price * (item.quantity || 1));
-      }, 0);
-
-      this.setData({
-        cartItems: items,
-        totalPrice: total.toFixed(2)
+      await request('/cart/add', 'POST', {
+        userId,
+        itemId: item.itemId,
+        itemType: item.itemType,
+        quantity: delta
       });
+      this.loadCart();
     } catch (err) {
-      console.error('Ошибка загрузки корзины с сервера:', err);
+      console.error('Ошибка изменения количества:', err);
+      wx.showToast({ title: 'Не удалось обновить', icon: 'none' });
+    }
+  },
+
+  // Удаление товара из корзины
+  async onRemoveItem(e) {
+    const { id } = e.currentTarget.dataset;
+    const userId = this.getUserId();
+
+    wx.showModal({
+      title: 'Удаление товара',
+      content: 'Удалить этот товар из корзины?',
+      confirmText: 'Удалить',
+      confirmColor: '#e53935',
+      cancelText: 'Отмена',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            wx.showLoading({ title: 'Удаление...' });
+            await request(`/cart/${id}/${userId}`, 'DELETE');
+            wx.hideLoading();
+            wx.showToast({ title: 'Удалено', icon: 'success' });
+            this.loadCart();
+          } catch (err) {
+            wx.hideLoading();
+            console.error('Ошибка удаления из корзины:', err);
+            wx.showToast({ title: 'Ошибка удаления', icon: 'none' });
+          }
+        }
+      }
+    });
+  },
+
+  // Оформление заказа / Покупка
+  async checkout() {
+    await this.onCheckout();
+  },
+
+  async onCheckout() {
+    if (!this.data.cartItems || this.data.cartItems.length === 0) {
+      wx.showToast({ title: 'Корзина пуста', icon: 'none' });
+      return;
+    }
+
+    if (this.data.submitting) return;
+
+    const userId = this.getUserId();
+    this.setData({ submitting: true });
+
+    try {
+      wx.showLoading({ title: 'Оформление...', mask: true });
+
+      await request('/cart/checkout', 'POST', { userId });
+
+      wx.hideLoading();
+
       wx.showToast({
-        title: 'Не удалось загрузить корзину',
+        title: 'Успешно оплачено!',
+        icon: 'success',
+        duration: 2000
+      });
+
+      setTimeout(() => {
+        this.goToMyCards();
+      }, 1500);
+    } catch (err) {
+      wx.hideLoading();
+      console.error('Ошибка при оформлении заказа:', err);
+      wx.showToast({
+        title: err?.data?.message || err?.message || 'Не удалось оформить заказ',
         icon: 'none'
       });
     } finally {
-      this.setData({ loading: false });
-      wx.hideLoading();
+      this.setData({ submitting: false });
     }
   },
 
-  async removeItem(e) {
-    const cartItemId = e.currentTarget.dataset.id; // Передаем ID элемента корзины
-    const userId = wx.getStorageSync('userId');
-
-    if (!cartItemId || !userId) return;
-
-    try {
-      wx.showLoading({ title: 'Удаление...' });
-      
-      // Вызываем эндпоинт удаления из базы
-      await request(`/cart/${cartItemId}?userId=${userId}`, 'DELETE');
-      
-      wx.showToast({ title: 'Удалено', icon: 'success' });
-      
-      // Перезагружаем корзину из БД
-      this.loadCart();
-    } catch (err) {
-      console.error('Ошибка удаления товара из корзины:', err);
-    } finally {
-      wx.hideLoading();
-    }
+  // Навигация в раздел "Мои карты"
+  goToMyCards() {
+    wx.navigateTo({
+      url: '/pages/cards/cards',
+      fail: () => {
+        wx.switchTab({ url: '/pages/cards/cards' });
+      }
+    });
   },
 
-  async checkout() {
-  if (this.data.cartItems.length === 0) {
-    wx.showToast({ title: 'Корзина пуста', icon: 'none' });
-    return;
-  }
-
-  const userId = wx.getStorageSync('userId');
-  if (!userId) {
-    wx.showToast({ title: 'Ошибка авторизации', icon: 'none' });
-    return;
-  }
-
-  wx.showLoading({ title: 'Оформление...', mask: true });
-
-  try {
-    // 1. Отправляем запрос на покупку всех товаров из корзины
-    const res = await request('/cart/checkout', 'POST', { userId });
-
-    wx.hideLoading();
-    wx.showToast({ title: 'Покупка успешна!', icon: 'success' });
-
-    // 2. Сразу перенаправляем на страницу «Мои карты»
-    setTimeout(() => {
-      wx.navigateTo({
-        url: '/pages/cards/cards' // Укажи точный путь к твоей странице карт
-      });
-    }, 1200);
-
-  } catch (err) {
-    console.error('Ошибка при оформлении заказа:', err);
-    wx.hideLoading();
-    wx.showToast({
-      title: err.data?.message || 'Ошибка оплаты',
-      icon: 'none'
+  // Вернуться в каталог
+  goToCatalog() {
+    wx.navigateBack({
+      fail: () => {
+        wx.switchTab({ url: '/pages/index/index' });
+      }
     });
   }
-}
 });

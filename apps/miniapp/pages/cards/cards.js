@@ -19,24 +19,22 @@ Page({
     }
 
     this.setData({ loading: true });
-    wx.showLoading({ title: 'Загрузка карт...' });
+    wx.showLoading({ title: 'Загрузка...' });
 
     try {
-      // Делаем запрос на бэкенд за купленными картами
       const res = await request(`/cards/purchased?userId=${userId}`, 'GET');
       this.setData({
         userCards: res || []
       });
     } catch (err) {
-      console.error('Ошибка загрузки купленных карт:', err);
-      wx.showToast({ title: 'Не удалось загрузить карты', icon: 'none' });
+      console.error('Ошибка загрузки купленных карт и сетов:', err);
+      wx.showToast({ title: 'Не удалось загрузить ваучеры', icon: 'none' });
     } finally {
       this.setData({ loading: false });
       wx.hideLoading();
     }
   },
 
-  // Метод перехода на страницу оплаты по QR
   goToQrPay() {
     wx.navigateTo({
       url: '/pages/sbp/sbp',
