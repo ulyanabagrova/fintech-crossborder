@@ -32,17 +32,9 @@ const createNestServer = async (expressInstance: any) => {
 let isInitialized = false;
 
 export default async function handler(req: any, res: any) {
-  console.log(`[Vercel Raw Incoming Request]: ${req.method} ${req.url}`);
-
-  // Если Vercel срезает /api/v1, восстанавливаем полный путь для NestJS
-  if (req.url && !req.url.startsWith('/api/v1')) {
-    const originalUrl = req.url;
-    if (req.url.startsWith('/v1')) {
-      req.url = `/api${req.url}`;
-    } else {
-      req.url = `/api/v1${req.url.startsWith('/') ? '' : '/'}${req.url}`;
-    }
-    console.log(`[URL Rewritten]: ${originalUrl} -> ${req.url}`);
+  // Vercel передает исходный путь в заголовке x-matched-path или использует req.url
+  if (req.headers && req.headers['x-matched-path']) {
+    req.url = req.headers['x-matched-path'];
   }
 
   if (!isInitialized) {
