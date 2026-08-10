@@ -9,7 +9,6 @@ async function bootstrapServer() {
   if (!cachedServer) {
     const app = await NestFactory.create(AppModule);
 
-    // 1. CORS — разрешаем запросы отовсюду (включая WeChat DevTools и iOS/Android WebView)
     app.enableCors({
       origin: true,
       methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -17,10 +16,8 @@ async function bootstrapServer() {
       allowedHeaders: 'Content-Type, Accept, Authorization, X-Requested-With',
     });
 
-    // 2. Глобальный префикс API
     app.setGlobalPrefix('api/v1');
 
-    // 3. Валидация DTO
     app.useGlobalPipes(
       new ValidationPipe({
         whitelist: true,
@@ -29,7 +26,6 @@ async function bootstrapServer() {
       }),
     );
 
-    // 4. Главная страница (Root endpoint вне префикса api/v1)
     const server = app.getHttpAdapter().getInstance();
     server.get('/', (req: Request, res: Response) => {
       res.json({
@@ -45,13 +41,11 @@ async function bootstrapServer() {
   return cachedServer;
 }
 
-// Экспорт для Vercel Serverless Function
 export default async function handler(req: any, res: any) {
   const server = await bootstrapServer();
   return server(req, res);
 }
 
-// Локальный запуск
 if (process.env.NODE_ENV !== 'production' && !process.env.VERCEL) {
   bootstrapServer().then(async () => {
     const port = process.env.PORT || 3000;
