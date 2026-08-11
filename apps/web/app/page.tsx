@@ -1,16 +1,22 @@
-// apps/web/app/page.tsx
 'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { request } from '@/utils/request';
+
+interface VoucherItem {
+  id: string;
+  title: string;
+  balanceFormatted: number;
+  priceFormatted: number;
+  [key: string]: any;
+}
 
 export default function Home() {
   const router = useRouter();
-  const [voucherCards, setVoucherCards] = useState<any[]>([]);
-  const [voucherSets, setVoucherSets] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [voucherCards, setVoucherCards] = useState<VoucherItem[]>([]);
+  const [voucherSets, setVoucherSets] = useState<VoucherItem[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [actionLoading, setActionLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const userId = localStorage.getItem('userId');
@@ -21,9 +27,9 @@ export default function Home() {
     loadData();
   }, [router]);
 
-  function ensureUserId() {
+  function ensureUserId(): string {
     if (typeof window === 'undefined') return '';
-    let userId = localStorage.getItem('userId');
+    const userId = localStorage.getItem('userId');
     if (!userId) {
       router.push('/login');
       return '';
@@ -31,21 +37,31 @@ export default function Home() {
     return userId;
   }
 
+  async function apiFetch(endpoint: string, method = 'GET', body?: any) {
+    const res = await fetch(endpoint, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+    return res.json();
+  }
+
   async function loadData() {
     setLoading(true);
     try {
       const [cardsRes, setsRes] = await Promise.all([
-        request('/vouchers/cards').catch(err => {
+        apiFetch('/vouchers/cards').catch((err) => {
           console.error('Ошибка загрузки карт:', err);
           return null;
         }),
-        request('/vouchers/sets').catch(err => {
+        apiFetch('/vouchers/sets').catch((err) => {
           console.error('Ошибка загрузки сетов:', err);
           return null;
-        })
+        }),
       ]);
 
-      const extractArray = (res: any) => {
+      const extractArray = (res: any): any[] => {
         if (!res) return [];
         if (Array.isArray(res)) return res;
         if (Array.isArray(res.data)) return res.data;
@@ -60,7 +76,7 @@ export default function Home() {
       const rawCards = extractArray(cardsRes);
       const rawSets = extractArray(setsRes);
 
-      const parseNum = (...valCandidates: any[]) => {
+      const parseNum = (...valCandidates: any[]): number => {
         for (const val of valCandidates) {
           if (val !== undefined && val !== null && val !== '') {
             const num = Number(val);
@@ -70,29 +86,29 @@ export default function Home() {
         return 0;
       };
 
-      const parsedCards = rawCards.map((item: any, index: number) => {
+      const parsedCards: VoucherItem[] = rawCards.map((item: any, index: number) => {
         const balance = parseNum(item.balance_rub, item.balanceRub, item.balance, item.nominal, item.nominal_rub);
         const price = parseNum(item.cost_price_rub, item.costPriceRub, item.price_rub, item.priceRub, item.price, item.cost, balance);
 
         return {
           ...item,
-          id: item.id || item._id || item.cardId || `card_${index}`,
+          id: String(item.id || item._id || item.cardId || `card_${index}`),
           title: item.store_name || item.storeName || item.title || item.name || 'Подарочная карта',
           balanceFormatted: balance,
-          priceFormatted: price
+          priceFormatted: price,
         };
       });
 
-      const parsedSets = rawSets.map((item: any, index: number) => {
+      const parsedSets: VoucherItem[] = rawSets.map((item: any, index: number) => {
         const balance = parseNum(item.total_balance_rub, item.totalBalanceRub, item.total_nominal_rub, item.total_balance, item.balance);
         const price = parseNum(item.price_rub, item.priceRub, item.price, item.cost, balance);
 
         return {
           ...item,
-          id: item.id || item._id || item.setId || `set_${index}`,
+          id: String(item.id || item._id || item.setId || `set_${index}`),
           title: item.title || item.name || 'Сет ваучеров',
           balanceFormatted: balance,
-          priceFormatted: price
+          priceFormatted: price,
         };
       });
 
@@ -111,11 +127,11 @@ export default function Home() {
 
     try {
       setActionLoading(true);
-      await request('/cart/add', 'POST', {
+      await apiFetch('/cart/add', 'POST', {
         userId,
         itemType: type,
         itemId: id,
-        quantity: 1
+        quantity: 1,
       });
       alert('Добавлено в корзину');
     } catch (err: any) {
