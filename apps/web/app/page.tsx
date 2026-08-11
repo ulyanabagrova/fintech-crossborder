@@ -1,4 +1,5 @@
 'use client';
+import { request } from '@/utils/request';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -37,25 +38,15 @@ export default function Home() {
     return userId;
   }
 
-  async function apiFetch(endpoint: string, method = 'GET', body?: any) {
-    const res = await fetch(endpoint, {
-      method,
-      headers: { 'Content-Type': 'application/json' },
-      body: body ? JSON.stringify(body) : undefined,
-    });
-    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-    return res.json();
-  }
-
   async function loadData() {
     setLoading(true);
     try {
       const [cardsRes, setsRes] = await Promise.all([
-        apiFetch('/vouchers/cards').catch((err) => {
+        request('/vouchers/cards').catch((err) => {
           console.error('Ошибка загрузки карт:', err);
           return null;
         }),
-        apiFetch('/vouchers/sets').catch((err) => {
+        request('/vouchers/sets').catch((err) => {
           console.error('Ошибка загрузки сетов:', err);
           return null;
         }),
@@ -127,7 +118,7 @@ export default function Home() {
 
     try {
       setActionLoading(true);
-      await apiFetch('/cart/add', 'POST', {
+      await request('/cart/add', 'POST', {
         userId,
         itemType: type,
         itemId: id,
