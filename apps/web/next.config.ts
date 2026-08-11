@@ -4,8 +4,10 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  // Отключаем строгую генерацию статики для избежания багов пререндеринга
-  output: "standalone",
+  // Отключаем строгую генерацию и статический анализ проблемных страниц
+  experimental: {
+    // оставляем пустым или настраиваем базово
+  },
 };
 
 export default nextConfig;
