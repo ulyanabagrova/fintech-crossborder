@@ -1,5 +1,5 @@
 // Конфигурация
-const API_URL = 'http://127.0.0.1:3000/api/v1/sbp/pay-qr';
+const request = require('../../utils/request.js');
 
 // Вспомогательный генератор UUID v4
 const generateUUID = () => {
@@ -184,28 +184,12 @@ Page({
     };
 
     try {
-      const res = await new Promise((resolve, reject) => {
-        wx.request({
-          url: API_URL,
-          method: 'POST',
-          header: { 'content-type': 'application/json' },
-          data: requestPayload,
-          success: resolve,
-          fail: reject
-        });
-      });
+      // Используем наш универсальный request.js вместо сырого wx.request и пропавшей API_URL
+      const responseData = await request('/sbp/pay-qr', 'POST', requestPayload);
 
       this.setData({ loading: false });
-      const responseData = res.data || {};
 
-      if (res.statusCode >= 400) {
-        const msg = responseData.message || `Ошибка сервера (${res.statusCode})`;
-        const details = `Status: ${res.statusCode}\nResponse: ${JSON.stringify(responseData)}\nPayload: ${JSON.stringify(requestPayload)}`;
-        this.setError(msg, details);
-        return;
-      }
-
-      if (responseData.success) {
+      if (responseData && responseData.success) {
         const sourceText = responseData.paidFrom === 'voucher_set' 
           ? 'Списано с ваучера!' 
           : 'Списано с карты магазина!';
@@ -232,7 +216,7 @@ Page({
       this.setData({ loading: false });
       this.setError(
         'Ошибка соединения с сервером',
-        `URL: ${API_URL}\nError: ${JSON.stringify(err)}`
+        `Error: ${JSON.stringify(err)}`
       );
     }
   },

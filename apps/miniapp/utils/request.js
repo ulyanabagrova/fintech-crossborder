@@ -1,7 +1,5 @@
-// Базовый домен без префикса
-export const DOMAIN = 'https://fintech-crossborder-backend-7go87yjj2-ulyanabagrovas-projects.vercel.app';
-export const API_PREFIX = '/api/v1';
-export const BASE_URL = `${DOMAIN}${API_PREFIX}`;
+// Правильно для Vercel (обязательно с HTTPS):
+export const BASE_URL = 'https://fintech-crossborder-backend-koe6i30xy-ulyanabagrovas-projects.vercel.app/api/v1';
 
 /**
  * Универсальный HTTP-клиент для WeChat Mini Program
@@ -22,23 +20,12 @@ function request(urlOrOptions, method = 'GET', data = {}) {
     path = urlOrOptions || '';
   }
 
-  // Сборка полного URL с защитой от двойного префикса
+  // Обработка формата URL
   let fullUrl = path;
   if (!path.startsWith('http')) {
-    if (!path.startsWith('/')) {
-      path = '/' + path;
-    }
-
-    // Если относительный путь уже содержит /api/v1, клеим к чистому домену
-    if (path.startsWith(API_PREFIX)) {
-      fullUrl = `${DOMAIN}${path}`;
-    } else {
-      fullUrl = `${BASE_URL}${path}`;
-    }
+    if (!path.startsWith('/')) path = '/' + path;
+    fullUrl = `${BASE_URL}${path}`;
   }
-
-  // Нормализация двойных слэшей (кроме https://)
-  fullUrl = fullUrl.replace(/([^:]\/)\/+/g, '$1');
 
   // Формируем базовые заголовки
   const headers = {
@@ -46,7 +33,8 @@ function request(urlOrOptions, method = 'GET', data = {}) {
     ...customHeaders,
   };
 
-  // Не подставляем Authorization токен на ручки авторизации
+  // Не подставляем Authorization токен на ручки логина/регистрации,
+  // чтобы протухший токен из storage не ломал публичные запросы (401 Unauthorized)
   const isAuthEndpoint = fullUrl.includes('/auth/');
   const token = wx.getStorageSync('token');
 
@@ -98,5 +86,3 @@ module.exports = request;
 module.exports.request = request;
 module.exports.default = request;
 module.exports.BASE_URL = BASE_URL;
-module.exports.DOMAIN = DOMAIN;
-module.exports.API_PREFIX = API_PREFIX;
