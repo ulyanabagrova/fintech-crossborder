@@ -16,7 +16,6 @@ export default function MyCardsPage() {
       return;
     }
     
-    // Очищаем userId от лишних кавычек, если они есть
     const cleanUserId = rawUserId.replace(/['"]/g, '');
     loadUserCards(cleanUserId);
   }, [router]);
@@ -24,15 +23,7 @@ export default function MyCardsPage() {
   async function loadUserCards(userId: string) {
     setLoading(true);
     try {
-      // Пытаемся получить данные
-      let res = await request(`/cards/purchased?userId=${encodeURIComponent(userId)}`, 'GET');
-      
-      // Если пусто, пробуем еще один вариант: если userId содержит "user_", попробуем без него
-      if ((!res || (Array.isArray(res) && res.length === 0)) && userId.startsWith('user_')) {
-        const altUserId = userId.replace('user_', '');
-        console.log('🔄 [MyCards] Первый запрос пуст, пробуем альтернативный ID:', altUserId);
-        res = await request(`/cards/purchased?userId=${encodeURIComponent(altUserId)}`, 'GET');
-      }
+      const res = await request(`/cards/purchased?userId=${encodeURIComponent(userId)}`, 'GET');
 
       const extractArray = (response: any) => {
         if (!response) return [];
@@ -54,26 +45,48 @@ export default function MyCardsPage() {
 
   return (
     <div className="min-h-screen bg-[#010101] text-white p-4">
-      <div className="max-w-2xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">🎟️ Мои ваучеры</h1>
+      <div className="max-w-2xl mx-auto flex flex-col min-h-[90vh]">
         
-        {loading ? (
-          <div className="text-center py-20 text-gray-500">Загрузка...</div>
-        ) : userCards.length === 0 ? (
-          <div className="text-center py-20 text-gray-500">
-            <p>Ваучеров пока нет. Проверьте правильность оплаты.</p>
-            <button onClick={() => router.push('/')} className="mt-4 bg-[#2a2a2a] px-4 py-2 rounded">В каталог</button>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-3">
-            {userCards.map((item, idx) => (
-              <div key={idx} className="bg-[#1e1e1e] p-4 rounded-xl border border-[#2a2a2a]">
-                <div className="font-bold">{item.title || item.name || 'Ваучер'}</div>
-                <div className="text-[#07c160] font-bold">Баланс: {item.balance_rub || item.balance || 0} ₽</div>
-              </div>
-            ))}
-          </div>
-        )}
+        {/* Шапка с заголовом */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold">🎟️ Мои ваучеры</h1>
+        </div>
+        
+        {/* Основной контент */}
+        <div className="flex-1">
+          {loading ? (
+            <div className="text-center py-20 text-gray-500">Загрузка...</div>
+          ) : userCards.length === 0 ? (
+            <div className="text-center py-20 text-gray-500 flex flex-col items-center gap-4">
+              <p>Ваучеров пока нет. Проверьте правильность оплаты.</p>
+              <button onClick={() => router.push('/')} className="bg-[#2a2a2a] hover:bg-[#333] px-4 py-2 rounded-xl text-sm transition">
+                В каталог
+              </button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-3">
+              {userCards.map((item, idx) => (
+                <div key={idx} className="bg-[#1e1e1e] p-4 rounded-xl border border-[#2a2a2a] flex justify-between items-center">
+                  <div>
+                    <div className="font-bold">{item.title || item.name || 'Ваучер'}</div>
+                    <div className="text-[#07c160] font-bold mt-1">Баланс: {item.balance_rub || item.balance || 0} ₽</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Кнопка СБП внизу страницы */}
+        <div className="mt-8 pt-4 border-t border-[#2a2a2a]">
+          <button
+            onClick={() => router.push('/sbp')}
+            className="w-full bg-[#07c160] hover:opacity-90 text-white font-bold py-3 px-4 rounded-xl text-sm transition flex items-center justify-center gap-2 shadow-lg shadow-[#07c160]/20 cursor-pointer"
+          >
+            <span>💳 Оплатить через СБП (QR-код)</span>
+          </button>
+        </div>
+
       </div>
     </div>
   );
