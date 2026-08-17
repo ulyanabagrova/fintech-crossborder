@@ -1,44 +1,53 @@
 <view class="container">
+
   <!-- Секция карт -->
   <view class="section">
-    <view class="section-title">Ваучерные карты</view>
+    <view class="section-row">
+      <text class="section-eyebrow">Ваучеры</text>
+      <text class="section-title">Ваучерные карты</text>
+    </view>
     <view class="cards-list">
-      <block wx:for="{{voucherCards}}" wx:key="id">
+      <block wx:for="{{voucherCards}}" wx:key="id" wx:for-index="idx">
         <view class="card-item">
-          
+          <view class="notch notch-left"></view>
+          <view class="notch notch-right"></view>
+
           <!-- Верхняя линия: Название и Баланс -->
           <view class="card-header">
             <text class="card-title">{{item.title}}</text>
-            <text class="card-balance">Баланс: {{item.balanceFormatted}} ₽</text>
+            <view class="card-balance-pill">
+              <text class="card-balance">{{item.balanceFormatted}} ₽</text>
+            </view>
           </view>
+
+          <view class="card-dash"></view>
 
           <!-- Нижняя линия: Кнопки слева, Цена справа -->
           <view class="card-footer">
             <view class="card-actions">
-              <view 
-                class="btn-action btn-add" 
+              <view
+                class="btn-action btn-add"
                 hover-class="btn-hover"
-                bindtap="onAddToCart" 
-                data-id="{{item.id}}" 
+                bindtap="onAddToCart"
+                data-id="{{item.id}}"
                 data-type="card">
                 В корзину
               </view>
-              <view 
-                class="btn-action btn-buy" 
+              <view
+                class="btn-action btn-buy"
                 hover-class="btn-hover"
-                bindtap="onBuyNow" 
-                data-id="{{item.id}}" 
+                bindtap="onBuyNow"
+                data-id="{{item.id}}"
                 data-type="card">
                 Купить
               </view>
             </view>
-            
+
             <view class="card-price-container">
-              <text class="card-price-label">Цена:</text>
+              <text class="card-price-label">Цена</text>
               <text class="card-price">{{item.priceFormatted}} ₽</text>
             </view>
           </view>
-
         </view>
       </block>
     </view>
@@ -46,44 +55,52 @@
 
   <!-- Секция сетов -->
   <view class="section">
-    <view class="section-title">Сеты ваучеров</view>
+    <view class="section-row">
+      <text class="section-eyebrow">Комплекты</text>
+      <text class="section-title">Сеты ваучеров</text>
+    </view>
     <view class="sets-list">
-      <block wx:for="{{voucherSets}}" wx:key="id">
-        <view class="card-item">
-          
+      <block wx:for="{{voucherSets}}" wx:key="id" wx:for-index="idx">
+        <view class="card-item card-item-set">
+          <view class="notch notch-left"></view>
+          <view class="notch notch-right"></view>
+
           <!-- Верхняя линия: Название и Баланс -->
           <view class="card-header">
             <text class="card-title">{{item.title}}</text>
-            <text class="card-balance">Баланс: {{item.balanceFormatted}} ₽</text>
+            <view class="card-balance-pill">
+              <text class="card-balance">{{item.balanceFormatted}} ₽</text>
+            </view>
           </view>
+
+          <view class="card-dash"></view>
 
           <!-- Нижняя линия: Кнопки слева, Цена справа -->
           <view class="card-footer">
             <view class="card-actions">
-              <view 
-                class="btn-action btn-add" 
+              <view
+                class="btn-action btn-add"
                 hover-class="btn-hover"
-                bindtap="onAddToCart" 
-                data-id="{{item.id}}" 
+                bindtap="onAddToCart"
+                data-id="{{item.id}}"
                 data-type="set">
                 В корзину
               </view>
-              <view 
-                class="btn-action btn-buy" 
+              <view
+                class="btn-action btn-buy"
                 hover-class="btn-hover"
-                bindtap="onBuyNow" 
-                data-id="{{item.id}}" 
+                bindtap="onBuyNow"
+                data-id="{{item.id}}"
                 data-type="set">
                 Купить
               </view>
             </view>
-            
+
             <view class="card-price-container">
-              <text class="card-price-label">Цена:</text>
+              <text class="card-price-label">Цена</text>
               <text class="card-price">{{item.priceFormatted}} ₽</text>
             </view>
           </view>
-
         </view>
       </block>
     </view>
@@ -93,7 +110,14 @@
 
   <!-- Фиксированное меню внизу -->
   <view class="bottom-nav">
-    <view class="nav-btn nav-btn-cards" hover-class="btn-hover" bindtap="goToMyCards">🎟️ Мои ваучеры</view>
-    <view class="nav-btn nav-btn-cart" hover-class="btn-hover" bindtap="goToCart">🛒 Корзина</view>
+    <view class="nav-btn nav-btn-cards" hover-class="btn-hover" bindtap="goToMyCards">
+      <text class="nav-ic">🎟️</text>
+      <text>Мои ваучеры</text>
+    </view>
+    <view class="nav-btn nav-btn-cart" hover-class="btn-hover" bindtap="goToCart">
+      <text class="nav-ic">🛒</text>
+      <text>Корзина</text>
+    </view>
   </view>
+
 </view>

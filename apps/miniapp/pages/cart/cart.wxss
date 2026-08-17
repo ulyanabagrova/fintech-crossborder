@@ -1,1 +1,202 @@
-/* pages/cart/cart.wxss */
+page {
+  background-color: #0F1214;
+  color: #F3EFE6;
+  font-family: 'Inter', sans-serif;
+}
+
+.container {
+  padding: 40rpx 30rpx;
+  padding-bottom: 260rpx; /* Запас под фиксированную плашку */
+  box-sizing: border-box;
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 0%, #1E232B 0%, #14171C 55%);
+}
+
+.header {
+  margin-bottom: 30rpx;
+}
+
+.title {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #F3EFE6;
+  letter-spacing: -0.01em;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 120rpx 0;
+  color: #ABA492;
+  font-size: 28rpx;
+}
+
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+/* Карточка товара */
+.card-item {
+  position: relative;
+  background: #FFFFFF;
+  border-radius: 20rpx;
+  padding: 40rpx;
+  color: #1B2430;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1), 0 14px 28px -14px rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(212, 175, 106, 0.14);
+}
+
+/* Акцент для сета (красная полоса слева) */
+.card-item.set-item {
+  border-left: 8rpx solid #C1272D;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24rpx;
+}
+
+.card-divider {
+  height: 2rpx;
+  background-color: rgba(212, 175, 106, 0.16);
+  margin-bottom: 24rpx;
+  border-top: 2rpx dashed rgba(212, 175, 106, 0.16);
+}
+
+.title-group {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  flex-wrap: wrap;
+}
+
+.type-badge {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 22rpx;
+  padding: 6rpx 16rpx;
+  border-radius: 20rpx;
+  font-weight: 600;
+  background: #F3EFE6;
+  color: #1B2430;
+}
+
+.type-badge.set {
+  background: rgba(193, 39, 45, 0.1);
+  color: #C1272D;
+}
+
+.store-name {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 30rpx;
+  font-weight: 600;
+  color: #1B2430;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16rpx;
+  margin-bottom: 24rpx;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.label {
+  font-size: 28rpx;
+  color: #7A7265;
+}
+
+.value {
+  font-size: 28rpx;
+  font-weight: 600;
+  color: #1B2430;
+}
+
+.value.balance {
+  font-family: 'IBM Plex Mono', monospace;
+  color: #1F5C4F;
+}
+
+.value.price {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 32rpx;
+  color: #1B2430;
+}
+
+.card-footer-action {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(27, 36, 48, 0.06);
+  padding-top: 20rpx;
+}
+
+.delete-btn {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 24rpx;
+  color: #C1272D;
+  background: rgba(193, 39, 45, 0.08);
+  padding: 10rpx 24rpx;
+  border-radius: 12rpx;
+  font-weight: 600;
+}
+
+/* Фиксированная нижняя панель с итогами и кнопкой */
+.bottom-checkout-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(20, 23, 27, 0.88);
+  backdrop-filter: blur(16px);
+  padding: 30rpx;
+  padding-bottom: calc(30rpx + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(212, 175, 106, 0.14);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.summary-label {
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 28rpx;
+  color: #ABA492;
+}
+
+.summary-value {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 36rpx;
+  font-weight: 700;
+  color: #F3EFE6;
+}
+
+.checkout-btn {
+  background: #C1272D;
+  color: #F3EFE6;
+  font-family: 'Space Grotesk', sans-serif;
+  font-size: 30rpx;
+  font-weight: 600;
+  border-radius: 14rpx;
+  height: 88rpx;
+  line-height: 88rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  box-shadow: 0 10px 20px -8px rgba(193, 39, 45, 0.5);
+  width: 100%;
+}

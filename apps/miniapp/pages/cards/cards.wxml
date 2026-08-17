@@ -11,7 +11,7 @@
   <!-- Список карточек -->
   <view class="cards-list" wx:if="{{userCards.length > 0}}">
     <block wx:for="{{userCards}}" wx:key="id">
-      <view class="card-item {{item.type === 'set' ? 'set-item' : ''}}">
+      <view class="ticket card-item {{item.type === 'set' ? 'set-item' : ''}}">
         <view class="card-header">
           <view class="title-group">
             <text class="type-badge {{item.type}}">
@@ -22,22 +22,24 @@
           <text class="status-tag status-{{item.status}}">{{item.status || 'ACTIVE'}}</text>
         </view>
         
+        <view class="card-divider"></view>
+
         <view class="card-body">
           <!-- Отображение баланса -->
           <view class="info-row">
-            <text class="label">Текущий баланс:</text>
+            <text class="label">Текущий баланс</text>
             <text class="value balance">{{item.balance_rub}} ₽</text>
           </view>
           
           <!-- Отображение цены -->
           <view class="info-row" wx:if="{{item.price_rub !== undefined}}">
-            <text class="label">Стоимость:</text>
+            <text class="label">Стоимость</text>
             <text class="value price">{{item.price_rub}} ₽</text>
           </view>
 
           <!-- Код активации, если есть -->
           <view class="info-row" wx:if="{{item.code}}">
-            <text class="label">Код активации:</text>
+            <text class="label">Код активации</text>
             <text class="value code">{{item.code}}</text>
           </view>
         </view>

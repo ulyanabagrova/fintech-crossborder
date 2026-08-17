@@ -1,49 +1,58 @@
-<view class="container" style="padding: 16px; background: #010101; min-height: 100vh; box-sizing: border-box;">
-  
-  <view style="font-size: 22px; font-weight: bold; color: #fff; margin-bottom: 20px;">🛒 Корзина</view>
+<view class="container">
+  <view class="header">
+    <text class="title">🛒 Корзина</text>
+  </view>
 
-  <block wx:if="{{!cartItems || cartItems.length === 0}}">
-    <view style="text-align: center; color: #666; margin-top: 60px;">Корзина пуста</view>
-  </block>
+  <!-- Состояние "Пусто" -->
+  <view wx:if="{{!cartItems || cartItems.length === 0}}" class="empty-state">
+    <text>Корзина пуста</text>
+  </view>
 
-  <block wx:else>
-    <view wx:for="{{cartItems}}" wx:key="id" style="background: #1e1e1e; padding: 14px; border-radius: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #2a2a2a;">
-      
-      <view style="flex: 1; padding-right: 12px;">
-        <view style="color: #fff; font-weight: bold; font-size: 15px;">{{item.title || item.name || 'Товар'}}</view>
+  <!-- Список товаров -->
+  <view class="cards-list" wx:if="{{cartItems && cartItems.length > 0}}">
+    <block wx:for="{{cartItems}}" wx:key="id">
+      <view class="ticket card-item {{item.itemType === 'set' ? 'set-item' : ''}}">
+        <view class="card-header">
+          <view class="title-group">
+            <text class="type-badge {{item.itemType === 'set' ? 'set' : ''}}">
+              {{item.itemType === 'card' ? 'Карта' : 'Сет'}} {{item.quantity > 1 ? 'x' + item.quantity : ''}}
+            </text>
+            <text class="store-name">{{item.title || item.name || 'Товар'}}</text>
+          </view>
+        </view>
         
-        <view style="color: #888; font-size: 12px; margin-top: 4px;">
-          Тип: {{item.itemType === 'card' ? 'Карта' : 'Сет'}} {{item.quantity > 1 ? 'x' + item.quantity : ''}}
+        <view class="card-divider"></view>
+
+        <view class="card-body">
+          <view class="info-row">
+            <text class="label">Баланс</text>
+            <text class="value balance">{{item.balanceRub || item.balance_rub || item.nominal || 0}} ₽</text>
+          </view>
+          
+          <view class="info-row">
+            <text class="label">Цена</text>
+            <text class="value price">{{item.priceRub || item.price_rub || item.cost_price_rub || 0}} ₽</text>
+          </view>
         </view>
 
-        <!-- Отображаем и баланс, и цену в корзине -->
-        <view style="display: flex; gap: 12px; margin-top: 6px; align-items: center;">
-          <view style="color: #07c160; font-size: 12px;">
-            Баланс: {{item.balanceRub || item.balance_rub || item.nominal || 0}} ₽
-          </view>
-          <view style="color: #ffffff; font-size: 14px; font-weight: bold;">
-            Цена: {{item.priceRub || item.price_rub || item.cost_price_rub || 0}} ₽
+        <view class="card-footer-action">
+          <view bindtap="removeItem" data-id="{{item.id}}" class="delete-btn">
+            Удалить
           </view>
         </view>
       </view>
-      
-      <view bindtap="removeItem" data-id="{{item.id}}" style="color: #ff4d4f; font-size: 12px; padding: 8px 12px; background: #2a1a1a; border-radius: 6px; white-space: nowrap;">
-        Удалить
-      </view>
+    </block>
+  </view>
 
+  <!-- Фиксированная нижняя панель: Итого и Кнопка Оплаты -->
+  <view class="bottom-checkout-bar" wx:if="{{cartItems && cartItems.length > 0}}">
+    <view class="summary-row">
+      <text class="summary-label">Итого к оплате:</text>
+      <text class="summary-value">{{totalPrice || 0}} ₽</text>
     </view>
-
-    <!-- Итого и Кнопка Оплаты -->
-    <view style="margin-top: 30px; background: #1a1a1a; padding: 16px; border-radius: 12px; border: 1px solid #333;">
-      <view style="display: flex; justify-content: space-between; color: #fff; font-size: 16px; font-weight: bold; margin-bottom: 16px;">
-        <text>Итого к оплате:</text>
-        <text style="color: #07c160;">{{totalPrice || 0}} ₽</text>
-      </view>
-
-      <view bindtap="checkout" style="background: #07c160; color: #fff; font-weight: bold; border-radius: 20px; text-align: center; padding: 12px 0; font-size: 15px;">
-        Оплатить
-      </view>
-    </view>
-  </block>
-
+    
+    <button class="checkout-btn" bindtap="checkout">
+      Оплатить
+    </button>
+  </view>
 </view>

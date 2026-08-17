@@ -6,63 +6,52 @@
   </view>
 
   <!-- Блок 1: Если QR ещё не сосканирован -->
-  <view class="scan-card" wx:if="{{!scannedData && !loading}}">
-    <view class="icon">📱</view>
+  <view class="scan-box" wx:if="{{!scannedData && !loading}}">
+    <view class="icon-wrap">📱</view>
     <text class="title">Оплата по QR-коду</text>
     <text class="subtitle">Отсканируйте код на кассе или выберите изображение из галереи</text>
 
-    <button class="btn-primary" bindtap="openCameraScan">📷 Включить камеру</button>
-    <button class="btn-secondary" bindtap="openGalleryScan">🖼️ Выбрать из галереи</button>
+    <button class="primary-btn" bindtap="openCameraScan">📷 Включить камеру</button>
+    <button class="secondary-btn" bindtap="openGalleryScan">🖼️ Выбрать из галереи</button>
 
     <!-- Вывод лога ошибки -->
     <view class="error-box" wx:if="{{errorMessage}}">
       <view class="error-header">
         <text class="error-title">⚠️ Ошибка</text>
-        <button class="copy-btn" bindtap="copyErrorLog">Скопировать лог</button>
+        <button class="copy-btn" bindtap="copyErrorLog">Скопировать</button>
       </view>
-      <text class="error-message" user-select="{{true}}">{{errorMessage}}</text>
-      <text class="error-details" user-select="{{true}}" wx:if="{{errorDetails}}">{{errorDetails}}</text>
+      <text class="error-message">{{errorMessage}}</text>
     </view>
   </view>
 
   <!-- Блок 2: Карточка подтверждения оплаты -->
   <view class="payment-card" wx:if="{{scannedData && !loading}}">
-    <view class="badge">QR успешно считан</view>
+    <view class="status-badge">QR успешно считан</view>
 
-    <view class="row">
+    <view class="info-row">
       <text class="label">Магазин</text>
-      <text class="value bold">{{scannedData.store}}</text>
+      <text class="value">{{scannedData.store}}</text>
     </view>
 
-    <view class="row">
+    <view class="info-row">
       <text class="label">К оплате</text>
       <text class="value price">{{scannedData.amount}} ₽</text>
     </view>
 
     <view class="actions">
-      <button class="btn-primary" bindtap="onTapSubmit">Подтвердить и оплатить</button>
-      <button class="btn-link" bindtap="resetScan">Отмена / Сканировать другой</button>
-    </view>
-
-    <!-- Вывод лога ошибки -->
-    <view class="error-box" wx:if="{{errorMessage}}">
-      <view class="error-header">
-        <text class="error-title">⚠️ Ошибка</text>
-        <button class="copy-btn" bindtap="copyErrorLog">Скопировать лог</button>
-      </view>
-      <text class="error-message" user-select="{{true}}">{{errorMessage}}</text>
-      <text class="error-details" user-select="{{true}}" wx:if="{{errorDetails}}">{{errorDetails}}</text>
+      <button class="confirm-btn" bindtap="onTapSubmit">Подтвердить и оплатить</button>
+      <button class="cancel-btn" bindtap="resetScan">Отмена</button>
     </view>
   </view>
 
-  <!-- Блок 3: Модалка подтверждения списания с сета -->
+  <!-- Модальное окно подтверждения -->
   <view class="modal-overlay" wx:if="{{showConfirmModal}}">
     <view class="modal-card">
       <text class="modal-title">{{modalTitle}}</text>
       <text class="modal-body">{{modalMessage}}</text>
       <view class="modal-actions">
         <button class="btn-cancel" bindtap="onCancelPayment">Отмена</button>
-        <button class="btn-confirm" bindtap="onConfirmPayment">Списать и выпустить</button>
+        <button class="btn-confirm" bindtap="onConfirmPayment">Списать</button>
       </view>
     </view>
   </view>
