@@ -3,7 +3,7 @@ const isLocal = typeof window !== 'undefined' && window.location.hostname === 'l
 
 export const BASE_URL = isLocal
   ? 'http://localhost:3000/api/v1' // Твой локальный бэкенд (измени порт на 3001, если бэк запущен там)
-  : 'https://fintech-crossborder-backend-koe6i30xy-ulyanabagrovas-projects.vercel.app/api/v1'; // Продакшн на Vercel
+  : 'https://fintech-crossborder-backend-papiouoeh-ulyanabagrovas-projects.vercel.app/api/v1'; // Продакшн на Vercel// Продакшн на Vercel
 
 export async function request(endpoint: string, method = 'GET', data: any = {}) {
   const url = `${BASE_URL}${endpoint.startsWith('/') ? '' : '/'}${endpoint}`;
